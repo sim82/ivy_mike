@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2009 Simon A. Berger
+ * 
+ *  This program is free software; you may redistribute it and/or modify its
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ */
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -23,23 +37,27 @@ typedef unsigned int u4_t;
 
 #define MISMATCH_PENALTY (4)
 
+
+// riskyvector aims to be the thinnest possible wrapper around a c-style array
+// with some basic std::vector compatibility (mainly iterators).
+// It provides absolutely no range checking and initialization!
 template <typename T>
-class cvector {
+class riskyvector {
 public:    
     typedef T* iterator;  
     typedef T&	reference;
     T* m_data;
     size_t m_size;
 
-    cvector( size_t size ) : m_size(size) {
+    riskyvector( size_t size ) : m_size(size) {
 	m_data = new T[size];
     }
 
-    cvector() {
+    riskyvector() {
 	m_data = 0;
     }
 
-    ~cvector() {
+    ~riskyvector() {
 	if( m_data != 0 ) {
 	    delete[] m_data;
 	}
@@ -79,8 +97,8 @@ public:
     typedef std::vector<char> dv_t;
 #else
     typedef  std::vector<char> seq_t;
-    typedef cvector<float> sv_t;
-    typedef cvector<char> dv_t;
+    typedef riskyvector<float> sv_t;
+    typedef riskyvector<char> dv_t;
 #endif
 private:
 	
@@ -561,62 +579,7 @@ public:
 };
 
 
-class MultipleAlignment {
-    std::vector<std::string> m_names;
-    std::vector<std::string> m_data;
-public:
-	    
-//     MultipleAlignment( size_t nTaxon, size_t seqLen ) : m_names(nTaxon), m_data(nTaxon)
-//     {
-//     }
 
-
-    static MultipleAlignment *loadPhylip( const char *name ) {
-	std::ifstream is(name);
-	
-	size_t nTaxon;
-	size_t seqLen;
-	
-	is >> nTaxon;
-	is >> seqLen;
-	
-	printf( "header: %zd %zd\n", nTaxon, seqLen );
-	
-	size_t n = 0;
-	
-	MultipleAlignment *ma = new MultipleAlignment();//nTaxon, seqLen);
-	while( !is.eof() ) {
-	    std::string name;
-	    std::string seq;
-	    
-	    is >> name;
-	    is >> seq;
-	    
-	    ma->m_names.push_back(name);
-	    ma->m_data.push_back(seq);
-	    //printf( "name: %s\n", name.c_str() );
-	    n++;
-	}
-	
-	assert( n == nTaxon );
-	printf( "n: %zd\n", n );
-	
-	return ma;
-    }
-    
-    size_t size() {
-	return m_names.size();
-    }
-    
-    const std::string &getName( size_t n ) {
-	return m_names.at(n);
-    }
-    
-    const std::string &getSequence( size_t n ) {
-	return m_data.at(n);
-    }
-    
-};
 
 // class Test {
 //     std::vector<std::string> m_vt;

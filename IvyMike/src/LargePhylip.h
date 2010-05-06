@@ -18,14 +18,14 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <unistd.h>
+//#include <unistd.h>
 #include <string.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 #include <fcntl.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <cassert>
 
 #include <stdint.h>
@@ -35,6 +35,8 @@
 #include <map>
 #include <sstream>
 #include <algorithm>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 typedef unsigned char u1_t;
 // namespace gnu = __gnu_cxx;
@@ -70,7 +72,10 @@ struct Rec {
 };
 
 class LargePhylip {
-    int m_fd;
+//    int m_fd;
+    boost::interprocess::file_mapping m_fm;
+    boost::interprocess::mapped_region m_mapping;
+
     off_t      m_fileSize;
 
     u1_t *m_buf;

@@ -13,17 +13,26 @@
  */
 
 #include "LargePhylip.h"
+#include <fstream>
 
+LargePhylip::LargePhylip(const char* filename) 
+    : m_fm(filename, boost::interprocess::read_only), 
+    m_fileSize(0), 
+    m_buf(0), 
+    m_nTaxa(0), 
+    m_seqLen(0), 
+    m_maxNameLen(0) 
+{
+    //m_fd = open( filename, O_RDONLY );
+    
+    {
+        std::ifstream ist(filename);
+        ist.seekg(0, std::ios::end);
+        m_fileSize = ist.tellg();
+    }
+    
 
-LargePhylip::LargePhylip(const char* filename) : m_fd(0), m_fileSize(0), m_buf(0), m_nTaxa(0), m_seqLen(0), m_maxNameLen(0) {
-    m_fd = open( filename, O_RDONLY );
-
-    assert( m_fd > 0 );
-
-    m_fileSize = lseek( m_fd, 0, SEEK_END );
-    lseek( m_fd, 0, SEEK_SET );
-
-//         printf( "size: %zd\n", m_fileSize );
+    printf( "size: %zd\n", m_fileSize );
 
 
     map();
@@ -96,16 +105,21 @@ void LargePhylip::print() {
     }
 }
 void LargePhylip::map() {
-    assert( m_fd > 0 );
+
     assert( m_buf == 0 );
     assert(m_fileSize > 0 );
+#if 0
     m_buf = (u1_t*)mmap( 0, m_fileSize, PROT_READ, MAP_PRIVATE, m_fd, 0 );
+#endif
+    m_mapping = boost::interprocess::mapped_region( m_fm, boost::interprocess::read_only );
+    m_buf = (u1_t*) m_mapping.get_address();
     assert( m_buf != 0 );
 }
 void LargePhylip::unmap() {
     assert(m_buf != 0);
     assert(m_fileSize > 0 );
-    munmap(m_buf, m_fileSize);
+//    munmap(m_buf, m_fileSize);
+    m_mapping = boost::interprocess::mapped_region();
     m_buf = 0;
 }
 int LargePhylip::getIdx(const char* name) {

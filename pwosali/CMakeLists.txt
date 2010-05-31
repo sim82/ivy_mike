@@ -6,4 +6,4 @@ target_link_libraries( pwosali ivymike )
 #get_target_property( ivy_dir ivymike LOCATION )
 #SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall --std=c++0x -I${ivy_dir}")
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")

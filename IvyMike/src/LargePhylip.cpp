@@ -100,7 +100,7 @@ LargePhylip::~LargePhylip() {
     }
 }
 void LargePhylip::print() {
-    for ( auto it = m_recs.begin(); it != m_recs.end(); ++it ) {
+    for ( std::vector< Rec >::iterator it = m_recs.begin(); it != m_recs.end(); ++it ) {
         printf( "name: %s %d\n", (*it).getName(m_buf).c_str(), (*it).dataLen );
     }
 }
@@ -123,7 +123,7 @@ void LargePhylip::unmap() {
     m_buf = 0;
 }
 int LargePhylip::getIdx(const char* name) {
-    auto it = m_nameMap.find(std::string(name));
+    std::map< std::string, size_t >::iterator it = m_nameMap.find(std::string(name));
     if ( it != m_nameMap.end() ) {
         return (*it).second;
     } else {

@@ -49,6 +49,7 @@ public:
 private:
     
     static void writePng( const boost::multi_array<float,2> &ma, const char *name ) {
+	
     //     boost::multi_array<float,2>ma = ma_;
     //     int dim = ma.shape()[0];
     //
@@ -264,6 +265,7 @@ public:
 	    // 	pvsv.push_back(sI);
 	    for ( off_t j = 0; j < i; j++ ) {
 		numall++;
+		dm[j][j] = 0.0;
 #if 0
 		if ( bbd[i][j] > 20 ) {
 		    dm[i][j] = sI.size() * 4;
@@ -326,15 +328,64 @@ public:
             printf( "rnd: %d\n", rnd );
         }
     }
-    ParsVecCluster( const std::map<int, std::vector<char> > &pvs, const boost::multi_array<float,2> &bbd, const int K, std::string dname = std::string() ) {
+    
+    boost::multi_array<float,2> m_dm;
+    
+    const std::map<int, std::vector<char> > &m_pvs;
+    std::vector<cpv_t> m_pvsComp;
+    size_t m_numDists;
+    inline float getDist( int i, int j ) {
+	float &d = m_dm[i][j];
+	if ( d >= 0.0 ) {
+	    return d;
+	} else {
+	    
+	    
+	    if ( i == j ) {
+		m_numDists++;
+		d = 0.0;
+	    } else {
+		m_numDists+=2;
+// 		assert( m_dm[j][i] < 0.0 );
+		const std::vector<char> &sI = m_pvs.at(i);
+		cpv_t &scI = m_pvsComp.at(i);
+		if ( scI.size() == 0 ) {
+		    compressPV( sI, scI );
+		}
+
+		const std::vector<char> &sJ = m_pvs.at(j);
+		cpv_t &scJ = m_pvsComp.at(j);
+		if ( scJ.size() == 0 ) {
+		    compressPV( sJ, scJ );
+		}
+		d = parsDistComp(scI, scJ);
+
+		m_dm[j][i] = d;
+	    }
+	    return d;
+	}
+	
+    }
+
+    ParsVecCluster( const std::map<int, std::vector<char> > &pvs, const boost::multi_array<float,2> &bbd, const int K, std::string dname = std::string() ) :
+	m_pvs( pvs ),
+	m_pvsComp( pvs.size() )
+    {
 	initNBits();
 	
 	off_t nSeqs = pvs.size();
 
 	assert( K <= nSeqs );
 	
-        boost::multi_array<float,2> dm(boost::extents[nSeqs][nSeqs]);
-	buildDistanceMatrix( dm, pvs, bbd, nSeqs );
+        m_dm.resize(boost::extents[nSeqs][nSeqs]);
+	
+	for( float *it = m_dm.data(), *end = m_dm.data() + m_dm.num_elements(); it != end; ++it ) {
+	    *it = -1.0;
+	}
+// 	for( boost::multi_array_ref< float, 2 >::iterator it = m_dm.begin(), end = m_dm.end(); it != end; ++it ) {
+// 	    it[0] = -1.0;
+// 	}
+// 	buildDistanceMatrix( m_dm, pvs, bbd, nSeqs );
 
 
 //     writePng( dm, "/space/test.png" );
@@ -356,38 +407,60 @@ public:
 
 
         m_stats.resize(K);
+	
+	// iteration stops at MAX_ITER, or if none of the medoids changed in the last iteration
         while ( iter < MAX_ITER && !breakIter ) {
             printf( "iter: %d\n", iter );
-
+	    //
             // assign keeps the list of assigned instances for each of the K clusters
-
+	    //
             m_assign.clear();
             m_assign.resize(K);
-
+	    
+	    
+	    //
             // put the current medoids into their assign lists
-
-            for ( int c = 0; c < K; c++ ) {
-                m_assign.at(c).push_back( cent[c] );
-
-            }
-
+	    //
+	    
+//             for ( int c = 0; c < K; c++ ) {
+//                 m_assign.at(c).push_back( cent[c] );
+// 	    }
+	    
+	    //
             // assign instances to clusters based on current medoids
+	    //
             for ( int i = 0; i < nSeqs; i++ ) {
-                if ( std::find( cent.begin(), cent.end(), i) != cent.end() ) {
-                    continue;
-                }
+//                 if ( std::find( cent.begin(), cent.end(), i) != cent.end() ) {
+//                     continue;
+//                 }
+
+		// for each (non-medoid) instance compare to every cluster medoid
 
                 float mind = FLT_MAX;
                 int bestc = -1;
                 for ( int c = 0; c < K; c++ ) {
                     int co = cent[c];
 
-                    if ( dm[co][i] < mind ) {
-                        mind = dm[co][i];
+		    //
+		    // force medoids into their own clusters.
+		    // if clusters with equal medoids exist there would be empty clusters otherwise.
+		    // it might be a better idea to randomly select a new medoid in such a case...
+		    //
+		    if( i == co ) {
+			bestc = c;
+			break;
+		    }
+		    
+		    float d = getDist( i, co );
+		    
+		   
+		    
+                    if ( d < mind ) {
+                        mind = d;
                         bestc = c;
                     }
                 }
-                //printf("assign: %d to %d\n", i, bestc );
+                
                 m_assign.at(bestc).push_back(i);
             }
 
@@ -397,8 +470,9 @@ public:
 
 
 
-
+	    //
             // find new medoids
+	    //
             int numChanges = 0;
 
 
@@ -417,8 +491,13 @@ public:
                 curStats.maxcdist = 0;
                 curStats.meancdist = 0;
 
+		//
+		// for each cluster do an all-against-all comparison of instances
+		// to find the instance with the minimum distance sum to all other instances
+		//
                 int centroid = cent[c];
 
+		printf( "casss: %d\n", casss );
                 for ( int i = 0; i < casss; i++ ) {
                     float sum = 0.0;
                     int ce = cass[i];
@@ -426,30 +505,39 @@ public:
 
 
                     for ( std::vector< int >::iterator it = cass.begin(); it != cass.end(); ++it ) {
-                        sum += dm[ce][*it];
-                        curStats.maxdist = std::max( curStats.maxdist, dm[ce][*it] );
+			float d = getDist( ce, *it );
+                        sum += d;
+                        curStats.maxdist = std::max( curStats.maxdist, d );
 
                     }
                     // 	    printf( "sum: %d %d: %f\n", c, ce, sum );
 
                     curStats.meandist += sum;
                     n += cass.size();
+#if 1
+                    curStats.maxcdist = std::max( curStats.maxcdist, getDist(centroid, ce) );
+                    curStats.meancdist += getDist(centroid, ce);
+#else
+		    curStats.maxcdist = 0;
+                    curStats.meancdist = 0;
+#endif
 
-                    curStats.maxcdist = std::max( curStats.maxcdist, dm[centroid][ce] );
-                    curStats.meancdist += dm[centroid][ce];
-
+		    
                     if ( sum < minsum ) {
                         mini = i;
                         minsum = sum;
                     }
                 }
+                assert( mini >= 0 );
                 curStats.meandist /= n;
                 curStats.meancdist /= casss;
                 curStats.med = centroid;
 //  	    printf( "mini %d: %d %d\t%f %zd\n", c, mini, cass[mini], minsum, cass.size() );
 // 	    printf( "cluster %d: max: %f mean: %f maxc: %f meanc: %f\n", c, maxdist, meandist / n, maxcdist, meancdist / casss );
 
-
+		//
+		// check if the new moedoid is equal to the old medoid
+		//
                 if ( cent[c] != cass[mini] ) {
                     numChanges++;
                 }
@@ -462,15 +550,20 @@ public:
             iter++;
         }
 
+	//
+	// print information about clusters
+	//
         FILE *of = fopen( "clusters.txt", "wb" );
         float meancentdist = 0;
         float mincentdist = FLT_MAX;
         int n = 0;
         for ( int i = 0; i < K; i++ ) {
             for ( int j = 0; j < i; j++ ) {
-                meancentdist += dm[cent[i]][cent[j]];
+ 		float d = getDist( cent[i], cent[j] );
+//		float d = 0.0;
+                meancentdist += d;
                 n++;
-                mincentdist = std::min( mincentdist, dm[cent[i]][cent[j]] );
+                mincentdist = std::min( mincentdist, d );
             }
 
 
@@ -498,10 +591,10 @@ public:
 
 
         }
-
+	fclose( of );
         printf( "meancentdist: %f mincentdist: %f\n", meancentdist / n, mincentdist );
+	printf( "dists: %zd of %zd\n", m_numDists, nSeqs * nSeqs );
 	
-	exit(0);
     }
     
     bool isMedoid( int branch ) {

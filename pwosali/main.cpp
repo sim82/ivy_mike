@@ -619,9 +619,20 @@ static inline std::string removeGaps( const std::string &s ) {
     
     return res;
 }
+
+class Bla {
+public:    
+    int a, b, c;
+    Bla() : a(0), b(0), c(0) {}
+};
 int main(int argc, char **argv) {
    
 //     std::auto_ptr<MultipleAlignment> ma(MultipleAlignment::loadPhylip( "/space/newPNAS/PNAS.phylip" ));
+    
+//     Bla bla1;
+//     bla1 = 0;
+//     printf( "bla: %d %d %d\n", bla1.a, bla1.b, bla1.c );
+//     exit(-1);
     
     mallopt(M_MMAP_MAX, 0);
     mallopt(M_TRIM_THRESHOLD, -1);

@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+//
+// compile with: gcc -Wall -std=c99 test.c -o test
+//
+
 
 typedef struct {
     // local and remote socket addresses
@@ -108,8 +112,6 @@ int main() {
     int my_port = 1234;
     
     fpga_con_init( &con, fpga_addr, my_port, fpga_port );
-    
-    
     
     fpga_con_send_init_packet( &con );
     

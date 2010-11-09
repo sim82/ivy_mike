@@ -12,7 +12,7 @@
  *  for more details.
  */
 
-#include "LargePhylip.h"
+#include "ivymike/LargePhylip.h"
 #include <fstream>
 
 LargePhylip::LargePhylip(const char* filename) 

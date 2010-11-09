@@ -21,7 +21,7 @@
 #include <malloc.h>
 #include <boost/concept_check.hpp>
 #include <auto_ptr.h>
-#include "LargePhylip.h"
+#include "ivymike/LargePhylip.h"
 #include <boost/timer.hpp>
 #include <boost/multi_array.hpp>
 typedef unsigned char u1_t;

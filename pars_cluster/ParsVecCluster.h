@@ -28,11 +28,11 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/jpeg_io.hpp>
-#define png_infopp_NULL (png_infopp)NULL
-#define int_p_NULL (int*)NULL
-#include <boost/gil/extension/io/png_io.hpp>
+/*#include <boost/gil/gil_all.hpp>
+#include <boost/gil/extension/io/jpeg_io.hpp>*/
+// #define png_infopp_NULL (png_infopp)NULL
+// #define int_p_NULL (int*)NULL
+// #include <boost/gil/extension/io/png_io.hpp>
 //#include <boost/gil/
 
 
@@ -63,7 +63,7 @@ public:
 private:
     
     static void writePng( const boost::multi_array<float,2> &ma, const char *name ) {
-	
+#if 0	
     //     boost::multi_array<float,2>ma = ma_;
     //     int dim = ma.shape()[0];
     //
@@ -108,6 +108,7 @@ private:
 	//printf( "minmax: %f %f\n", min, max );
 
 	//interleaved_view<>v();
+	#endif
 
     }
     
@@ -417,7 +418,7 @@ public:
 	//
         const int MAX_ITER = 20;
         int iter = 0;
-        boolean breakIter = false;
+        bool breakIter = false;
 
 
         m_stats.resize(K);

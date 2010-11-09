@@ -12,7 +12,7 @@
  *  for more details.
  */
 
-#include "MultipleAlignment.h"
+#include "ivymike/MultipleAlignment.h"
 
 
 MultipleAlignment* MultipleAlignment::loadPhylip(const char* name) {

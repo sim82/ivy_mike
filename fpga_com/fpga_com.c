@@ -18,7 +18,7 @@ static void die_perror( const char *call ) {
 
 void fpga_con_init( fpga_con_t *con, const void *daddr, int lport, int dport ) {
     
-    printf( "size: %zd %zd\n", sizeof( con->l_sockaddr ), sizeof( struct sockaddr_in ));
+//     printf( "size: %zd %zd\n", sizeof( con->l_sockaddr ), sizeof( struct sockaddr_in ));
     
     // set up local socket address
     memset( &con->l_sockaddr, 0, sizeof( con->l_sockaddr ));

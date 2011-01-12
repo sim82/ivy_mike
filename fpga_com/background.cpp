@@ -68,6 +68,7 @@ void BackgroundReader::run() {
 	while( getticks() - t1 < 24000 / 1.5 );
 	
 	m_lock.lock();
+// 	printf( "write in lock\n" );
 	checkInvariant();
 	
 	
@@ -105,9 +106,12 @@ void BackgroundReader::run() {
 	}
 	
 	
-	#if 0
-	ssize_t size = recv( m_socket, &m_data[m_writePtr + 4], maxsize - 4, 0 );
-	
+	#if 1
+// 	printf( "recv called\n" );
+	m_lock.unlock();
+	ssize_t size = recv( m_socket, &m_data[m_writePtr + 4], m_maxsize - 4, 0 );
+	m_lock.lock();
+// 	printf( "recv returned: %zd\n", size );
 	#else
 	ssize_t size = rand_uint();
 	memset( &m_data[m_writePtr + 4], (uint8_t)size & 0xFF, size );
@@ -122,6 +126,7 @@ void BackgroundReader::run() {
 	
 	checkInvariant();
 	m_lock.unlock();
+// 	printf( "write outside lock\n" );
     }
     
 }
@@ -192,8 +197,9 @@ void BackgroundReader::pushReadPtrPast(size_t goalPtr)
 
 ssize_t BackgroundReader::readPacket( void* buf, size_t size )
 {
+//     printf( "read locking\n" );
     m_lock.lock();
-    
+//     printf( "read in lock\n" );
     checkInvariant();
     
     // check for wrap around of read cycle
@@ -221,7 +227,9 @@ ssize_t BackgroundReader::readPacket( void* buf, size_t size )
 	checkInvariant();
 	m_lock.unlock();
 	m_nblocked++;
-	while( m_readbarrier != 0 );
+	
+// 	printf( "at read barrier\n" );
+	while( m_readbarrier != 0 ) { /*printf( "rb: %d\n", m_readbarrier );*/};
 	
 	m_lock.lock();
 	checkInvariant();
@@ -263,7 +271,7 @@ ssize_t BackgroundReader::readPacket( void* buf, size_t size )
     }
     checkInvariant();
     m_lock.unlock();
-    
+//     printf( "read outside lock\n" );
     return size;
 }
 
@@ -277,7 +285,7 @@ void BackgroundReader::join()
     printf( "nskipped: %d (%d + %d)\n", m_nskipped1 + m_nskipped2, m_nskipped1, m_nskipped2 );
 }
 
-
+#if 0
 int main() {
     const size_t bufsize = 1024 * 1024 * 1;
     
@@ -324,3 +332,4 @@ int main() {
 // 	printf( "%d ", rand_uint() );
 //     }
 }
+#endif

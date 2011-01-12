@@ -3,7 +3,7 @@
 #include <ivymike/cycle.h>
 #include <vector>
 #include <sys/types.h>
-#include <cstdint>
+#include <stdint.h>
 #include <cstring>
 #include <byteswap.h>
 #include <boost/concept_check.hpp>

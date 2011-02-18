@@ -32,7 +32,7 @@ LargePhylip::LargePhylip(const char* filename)
     }
     
 
-    printf( "size: %zd\n", m_fileSize );
+//     printf( "size: %zd\n", m_fileSize );
 
 
     map();
@@ -51,14 +51,14 @@ LargePhylip::LargePhylip(const char* filename)
         // in the non-EOF case this is one position before the current mbuf.position()
 
 //             u1_t *line = &m_buf[spos];
+        
         size_t lineLen = ptr - spos;
-
         // advance ptr past newline (=beginning of next line)
         ptr++;
-
+    
         if ( !haveHeader ) {
             Rec rec;
-//                printf( "ll: %d\n", lineLen );
+//                 printf( "ll: %d %d %d\n", lineLen, spos, ptr );
             interpret( spos, lineLen, rec );
 
             std::string name = rec.getName(m_buf);
@@ -68,7 +68,7 @@ LargePhylip::LargePhylip(const char* filename)
             haveHeader = true;
 
             m_nTaxa = atoi( name.c_str() );
-            m_seqLen = atoi( name.c_str() );
+            m_seqLen = atoi( data.c_str() );
             m_recs.resize( m_nTaxa );
             currec = m_recs.begin();
         } else {
@@ -155,7 +155,7 @@ void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec) {
     assert( nspace > 0 );
 
     rec.data = line + ptr;
-    rec.dataLen = lineLen - ptr - 1;
+    rec.dataLen = lineLen - ptr;
     rec.dataMax = rec.dataLen;
 
 }

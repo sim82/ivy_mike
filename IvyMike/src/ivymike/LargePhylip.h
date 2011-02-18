@@ -109,9 +109,23 @@ public:
 	return m_recs.at(i).getName(m_buf);
     }
     
+    inline size_t getNameLen( int i ) {
+        return m_recs.at(i).nameLen;
+    }
+    
     inline std::string getSequence( int i ) {
 	assert( m_buf != 0 );
 	return m_recs.at(i).getData(m_buf);
+    }
+    
+    inline u1_t * getSequenceBegin( int i ) {
+        const Rec &rec = m_recs.at(i);
+        return m_buf + rec.data;
+    }
+    
+    inline u1_t * getSequenceEnd( int i ) {
+        const Rec &rec = m_recs.at(i);
+        return m_buf + rec.data + rec.dataLen;
     }
     
     inline int size() {

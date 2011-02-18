@@ -1,0 +1,2 @@
+add_executable( phylip_remove_empty_columns phylip_remove_empty_columns.cpp )
+target_link_libraries( phylip_remove_empty_columns ivymike )

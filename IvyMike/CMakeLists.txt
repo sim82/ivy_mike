@@ -14,3 +14,4 @@ ADD_EXECUTABLE( treeparser_test src/TreeParser.cpp )
 
 INSTALL(FILES ivymike/LargePhylip.h
   DESTINATION include)
+

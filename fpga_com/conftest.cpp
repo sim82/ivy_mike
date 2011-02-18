@@ -36,10 +36,9 @@ public:
 	    printf( "recv: %zd %s\n", size, strerror(errno) );
 	    for( int i = 0; i < size; i++ ) {
 		if( i > 0 && (i % 16) == 0 ) {
-		    
 		    printf( "\n" );
 		}
-		printf( " %x", rxb[i] ); 
+		printf( " %d", rxb[i] ); 
 	    }
 	    printf( "\n" );
 	    m_bstop = true;
@@ -55,23 +54,54 @@ public:
 };
 
 
+
 int main() {
     fpga_con_t con;
-    
-    fpga_con_init( &con, "131.159.28.113", 12340, 12350 );   
-    
+   
+    fpga_con_init( &con, "192.168.1.1", 21844, 21845 );  
+   
     bg_reader bgr( con.s );
-    
+
+    //char cmd1[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,170,170,170,168}; // test request
+    //fpga_con_send(&con, cmd1, 18);
+   
     // send first command
-    char cmd1[4] = {1,2,3,4};
-    fpga_con_send(&con, cmd1, 4);
-    fpga_con_send_init_packet(&con);
-    
-    
-    char cmd2[4] = {1,2,3,4};
-    fpga_con_send(&con, cmd2, 4);
-    
-    
-    bgr.join();
+    //char cmd1[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,170,170,170,170};
+    char cmd2[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,170,170,170,171};
+    fpga_con_send(&con, cmd2, 18);
+    //fpga_con_send_init_packet(&con);
+   
+    char cmd3[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,170,170,170,170};
+    fpga_con_send(&con, cmd3, 18);
+   
+    char cmd4[4] = {1,2,3,4};
+    fpga_con_send(&con, cmd4, 4);
+
+    char cmd5[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,170,170,170,168}; // test request
+    fpga_con_send(&con, cmd5, 18);
+   
+   
+    bgr.join();   
     
 }
+
+// int main() {
+//     fpga_con_t con;
+//     
+//     fpga_con_init( &con, "131.159.28.113", 12340, 12350 );   
+//     
+//     bg_reader bgr( con.s );
+//     
+//     // send first command
+//     char cmd1[4] = {1,2,3,4};
+//     fpga_con_send(&con, cmd1, 4);
+//     fpga_con_send_init_packet(&con);
+//     
+//     
+//     char cmd2[4] = {1,2,3,4};
+//     fpga_con_send(&con, cmd2, 4);
+//     
+//     
+//     bgr.join();
+//     
+// }

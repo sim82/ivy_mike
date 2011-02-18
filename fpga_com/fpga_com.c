@@ -48,7 +48,8 @@ void fpga_con_init( fpga_con_t *con, const void *daddr, int lport, int dport ) {
 }
 
 ssize_t fpga_con_send( fpga_con_t *con, const void *buf, size_t len ) {
-	
+    
+    
     ssize_t rsend = sendto( con->s, buf, len, 0, (struct sockaddr*)&con->d_sockaddr, sizeof(con->d_sockaddr));
     if( rsend < 0 ) {
 	die_perror( "sendto" );

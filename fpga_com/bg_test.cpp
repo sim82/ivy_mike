@@ -8,6 +8,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <algorithm>
+// #include <boost/thread/
 
 class bg_reader {
     int m_socket;

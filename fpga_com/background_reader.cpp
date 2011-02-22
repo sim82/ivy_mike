@@ -305,6 +305,7 @@ void fpga_bgr_stop_interrupt_join( fpga_bgr_t *cbgr) {
 //     return vo;
 // }
 
+
 template<typename T,size_t N>
 struct swap_endian {
     inline T operator()( T &v ) {
@@ -324,7 +325,10 @@ template<typename T>
 struct swap_endian<T,2> {
     inline T operator()( T &v ) {
         uint16_t t = __bswap_16(*((uint16_t*)&v));
-        return *((T*)&t);
+        
+        T* r = (T*)&t; // we don't want to dereference a type-punned pointer, do we?
+        return *r;
+        
     }
 };
 
@@ -333,7 +337,9 @@ template<typename T>
 struct swap_endian<T,4> {
     inline T operator()( T &v ) {
         uint32_t t = __bswap_32(*((uint32_t*)&v));
-        return *((T*)&t);
+        
+        T* r = (T*)&t;
+        return *r;
     }
 };
 
@@ -341,35 +347,53 @@ template<typename T>
 struct swap_endian<T,8> {
     inline T operator()( T &v ) {
         uint64_t t = __bswap_64(*((uint64_t*)&v));
-        return *((T*)&t);
+        
+        T* r = (T*)&t;
+        return *r;
     }
 };
 
 
 
 
-// template<typename T,size_t N>
-// struct passthrough {
-//   
-//     inline T operator()( T &v ) {
-//         return v;
-//     }
-//     
-// };
-
 
 template<typename T,size_t N>
-struct xerox_swap {
+struct swappy_au {
         
     swap_endian<T,N> swap;
-    inline void operator()( T * dest, T * src, size_t n ) {
-        //T * ptr = src;
-        T * end = src + n;
+    inline void operator()( void * dest, void * src, size_t n ) {
+        std::copy( (char *)src, ((char *)src) + n * N, (char *)dest );
+        //std::memcpy( dest, src, n * N );
         
-        while( src < end ) {
-            *dest = swap( *src );
-            src++;
-            dest++;
+        T * ptr = (T *)dest;
+        T * end = ptr + n;
+        
+        // do the endian swapping in place in the aligned buffer
+        while( ptr < end ) {
+            *ptr = swap( *ptr );
+            ptr++;
+        }
+        
+    }
+
+};
+
+template<typename T,size_t N>
+struct swappy_aa {
+        
+    swap_endian<T,N> swap;
+    inline void operator()( void * dest, void * src, size_t n ) {
+        
+        
+        T * sptr = (T *)src;
+        T * ptr = (T *)dest;
+        T * end = ptr + n;
+        
+        // copy and swap on the fly, assuming that both buffers are aligned
+        while( ptr < end ) {
+            *ptr = swap( *sptr );
+            ptr++;
+            sptr++;
         }
         
     }
@@ -379,9 +403,9 @@ struct xerox_swap {
 
 template<typename T,size_t N>
 struct xerox_plain {
-        
-    inline void operator()( T * dest, T * src, size_t n ) {
-        std::copy( src, src + n, dest );
+    inline void operator()( void * dest, void * src, size_t n ) {
+        std::copy( (char*)src, ((char*)src) + n * N, (char*)dest ); // using char* here to prevent std;:copy form making any assumptions about th alignment of src/dest
+        //std::copy( (T*)src, ((T*)src) + n, (T*)dest );
     }
 };
 
@@ -410,21 +434,19 @@ static bool fpga_bgr_recv_genv( fpga_bgr_t *cbgr, T *buf, size_t n ) {
     while( ptr < buf_end ) {
     
         
-        ssize_t size = bgr.block_recv(rbuf, MPU);
+        ssize_t raw_size = bgr.block_recv(rbuf, MPU);
 //         printf( "ptr: %p %zd %d %d %d %d\n", ptr, size, rbuf[0], rbuf[1], rbuf[2], rbuf[3] );
-        assert( size > 0 );
+        assert( raw_size > 1 );
+        
+        ssize_t size = raw_size - 1;
+        uint8_t *rptr = rbuf + 1;
         
         ssize_t ne = size / sizeof(T);
         ssize_t left = buf_end - buf;
         
         ssize_t to_copy = std::min( ne, left );
-        //memcpy( ptr, rbuf, to_copy * sizeof(T));
-//         T* end = ptr + to_copy;
+        xerox( ptr, rptr, to_copy );
         
-        xerox( ptr, (T*)rbuf, to_copy );
-//         for( int i = 0; ptr < end; ptr++, i++ ) {
-//             *ptr = filter(((T*)rbuf)[i]);
-//         }
         
         ptr += to_copy;
     }
@@ -438,18 +460,19 @@ bool fpga_bgr_recv_charv( fpga_bgr_t *bgr, char *buf, size_t n ) {
 }
 
 bool fpga_bgr_recv_shortv( fpga_bgr_t *bgr, short *buf, size_t n ) {
-    return fpga_bgr_recv_genv<short,xerox_swap<short,2> >( bgr, buf, n );
+    return fpga_bgr_recv_genv<short,swappy_au<short,2> >( bgr, buf, n );
 }
     
 bool fpga_bgr_recv_intv( fpga_bgr_t *bgr, int *buf, size_t n ) {
-    return fpga_bgr_recv_genv<int,xerox_swap<int,4> >( bgr, buf, n );
+    return fpga_bgr_recv_genv<int,swappy_au<int,4> >( bgr, buf, n );
 }
 
 bool fpga_bgr_recv_floatv( fpga_bgr_t *bgr, float *buf, size_t n ) {
-    return fpga_bgr_recv_genv<float,xerox_swap<float,4> >( bgr, buf, n );
+    return fpga_bgr_recv_genv<float,swappy_au<float,4> >( bgr, buf, n );
 }
 
 bool fpga_bgr_recv_doublev( fpga_bgr_t *bgr, double *buf, size_t n ) {
+    //return fpga_bgr_recv_genv<double,xerox_plain<double,8> >( bgr, buf, n );
     return fpga_bgr_recv_genv<double,xerox_plain<double,8> >( bgr, buf, n );
 }
 
@@ -498,7 +521,7 @@ int main() {
         bool succ = fpga_bgr_recv_doublev( &bgr, iv, 1000 );
         
         for( int i = 0; i < 1000; i++ ) {
-            printf( "%.2f ", iv[i] );
+           printf( "%.2f ", iv[i] );
             if( i % 20 == 19 ) {
                 printf( "\n" );
             }

@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "fpga_com.h"
 #include <sys/socket.h>
@@ -99,21 +100,103 @@ static __inline size_t mymin( size_t a, size_t b ) {
 }
 
 const static size_t MTU = 1500;
+const static size_t PH_SIZE = 1;
+
+
+// static __inline size_t pack( uint8_t *buf, uint8_t ht, size_t buf_size, void *src, size_t src_size ) {
+//     assert( src_size + PH_SIZR <= buf_size );
+//     
+//     buf[0] = ht;
+//     memcpy( buf + PH_SIZE, src, src_size );
+//     
+//     return src_size + PH_SIZE;
+// }
+
+// TODO; check how large the impact of doing the byte swappin on unaligned values really is
+// there is no simple way around it (like in the receiving direction).
+static __inline void swappy_16( void *dest, void *src, size_t n ) {
+    uint16_t *idest = (uint16_t*)dest;
+    uint16_t *isrc = (uint16_t*)src;
+    
+    for( size_t i = 0; i < n / 2; i++ ) {
+        idest[i] = __bswap_16(isrc[i]);
+    }
+}
+
+static __inline void swappy_32( void *dest, void *src, size_t n ) {
+    uint32_t *idest = (uint32_t*)dest;
+    uint32_t *isrc = (uint32_t*)src;
+    
+    for( size_t i = 0; i < n / 4; i++ ) {
+        idest[i] = __bswap_32(isrc[i]);
+    }
+    
+}
+
+
+static __inline void swappy_64( void *dest, void *src, size_t n ) {
+    uint64_t *idest = (uint64_t*)dest;
+    uint64_t *isrc = (uint64_t*)src;
+    
+    for( size_t i = 0; i < n / 8; i++ ) {
+        idest[i] = __bswap_64(isrc[i]);
+    }
+}
+
+#define BS_NONE  (0)
+#define BS_16  (1)
+#define BS_32  (2)
+#define BS_64  (3)
+
+static __inline size_t pack_and_send( fpga_con_t *con, uint8_t *buf, size_t buf_size, uint8_t ht, void *src, size_t src_size, int swap ) {
+    const size_t pack_size = src_size + PH_SIZE;
+    
+    assert( pack_size <= buf_size );
+    
+    buf[0] = ht;
+    
+    switch( swap ) { 
+    case BS_NONE:
+        memcpy( buf + PH_SIZE, src, src_size );
+        break;
+        
+    case BS_16:
+        swappy_16( buf + PH_SIZE, src, src_size );
+        break;
+        
+    case BS_32:
+        swappy_32( buf + PH_SIZE, src, src_size );
+        break;
+    
+        
+    case BS_64:
+        swappy_64( buf + PH_SIZE, src, src_size );
+        break;
+     
+    default:
+        assert(0);
+    }
+        
+    fpga_con_send( con, buf, pack_size );
+    
+    return src_size + PH_SIZE;    
+}
+
+
+
 
 int fpga_con_send_charv( fpga_con_t *con, char *buf, size_t n ) {
     
     
-    const size_t blocksize = MTU;
-    
+    const size_t blocksize = (MTU - PH_SIZE);
+    uint8_t sb[MTU];
     
     size_t sent = 0;
     while( sent < n ) {
         const size_t to_copy = mymin( blocksize, n - sent );
         
-        fpga_con_send( con, (void*) &buf[sent], to_copy );
-        
+        pack_and_send( con, sb, MTU, 0, (void*) &buf[sent], to_copy, BS_NONE );
         sent += to_copy;
-        
     }
     
     return 1;
@@ -125,14 +208,15 @@ int fpga_con_send_shortv( fpga_con_t *con, short *buf, size_t n ) {
     
     const size_t TSIZE = sizeof( short );
     
-    const size_t blocksize = MTU / TSIZE;
-    
+    const size_t blocksize = (MTU - PH_SIZE) / TSIZE;
+    uint8_t sb[MTU];
     
     size_t sent = 0;
     while( sent < n ) {
         const size_t to_copy = mymin( blocksize, n - sent );
         
-        fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
+        //fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
+        pack_and_send( con, sb, MTU, 0, (void*) &buf[sent], to_copy * TSIZE, BS_16 );
         
         sent += to_copy;
         
@@ -145,14 +229,16 @@ int fpga_con_send_intv( fpga_con_t *con, int *buf, size_t n ) {
     
     const size_t TSIZE = sizeof( int );
     
-    const size_t blocksize = MTU / TSIZE;
+    const size_t blocksize = (MTU - PH_SIZE) / TSIZE;
     
+    uint8_t sb[MTU];
     
     size_t sent = 0;
     while( sent < n ) {
         const size_t to_copy = mymin( blocksize, n - sent );
         
-        fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
+//         fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
+        pack_and_send( con, sb, MTU, 0, (void*) &buf[sent], to_copy * TSIZE, BS_32 );
         
         sent += to_copy;
         
@@ -170,17 +256,18 @@ int fpga_con_send_doublev( fpga_con_t *con, double *buf, size_t n ) {
     
     const size_t TSIZE = sizeof( double );
     
-    const size_t blocksize = MTU / TSIZE;
+    const size_t blocksize = (MTU - PH_SIZE) / TSIZE;
+    
+    uint8_t sb[MTU];
     
     
     size_t sent = 0;
     while( sent < n ) {
         const size_t to_copy = mymin( blocksize, n - sent );
         
-        fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
-        
+//         fpga_con_send( con, (void*) &buf[sent], to_copy * TSIZE );
+        pack_and_send( con, sb, MTU, 0, (void*) &buf[sent], to_copy * TSIZE, BS_64 );
         sent += to_copy;
-        
     }
     
     return 1;

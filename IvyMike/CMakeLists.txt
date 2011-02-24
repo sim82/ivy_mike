@@ -11,6 +11,8 @@ INSTALL(TARGETS ivymike
 )
 
 ADD_EXECUTABLE( treeparser_test src/TreeParser.cpp )
+ADD_EXECUTABLE( sdf_test src/sdf.cpp )
+
 
 INSTALL(FILES ivymike/LargePhylip.h
   DESTINATION include)

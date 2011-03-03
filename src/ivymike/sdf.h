@@ -26,13 +26,14 @@
 namespace ivy_mike {
 
 class sdf {
-
+public:
     struct atom {
         float   m_x, m_y, m_z;
         char    m_ele;
+        int     m_can_ele;
         //std::string     m_extra;
         
-        atom( float x, float y, float z, int ele ) : m_x(x), m_y(y), m_z(z), m_ele(ele)
+        atom( float x, float y, float z, int ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_ele(ele), m_can_ele(can_ele)
         {
       //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
         }
@@ -40,10 +41,11 @@ class sdf {
     struct bond {
         std::pair <int,int>     m_atoms;
         int                     m_type;
+        int                     m_can_type;
        // std::string             m_extra;
         
         
-        bond( int first, int second, int type ) : m_atoms(first,second), m_type(type)
+        bond( int first, int second, int type, int can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
         {
         //    printf( "bond: %d %d %d\n", m_atoms.first, m_atoms.second, m_type );
         }
@@ -59,6 +61,34 @@ class sdf {
         //std::map<std::string,std::string> m_extra;
         
     };
+private:
+    std::map<int,int> m_bondtype_map;
+    std::map<char,int> m_atomtype_map;
+    
+    int canonicalize_element(char ele) {
+        std::map< char, int >::iterator it = m_atomtype_map.find(ele);
+        if( it == m_atomtype_map.end() ) {
+            int nid = m_atomtype_map.size();
+            m_atomtype_map[ele] = nid;
+            return nid;
+        } else {
+         
+            return it->second;
+        }
+        
+    }
+    int canonicalize_bond_type(int type) {
+        std::map< int, int >::iterator it = m_bondtype_map.find(type);
+        if( it == m_bondtype_map.end() ) {
+            int nid = m_bondtype_map.size();
+            m_bondtype_map[type] = nid;
+            return nid;
+        } else {
+         
+            return it->second;
+            
+        }
+    }
     
     std::vector<molecule> m_molecules;
     bool parse_molecule( std::vector<molecule> &cont, std::ifstream &is) {
@@ -134,7 +164,9 @@ class sdf {
                 ele++;
             }
                
-            mol.m_atoms.push_back(atom(x,y,z,*ele));
+               
+            
+            mol.m_atoms.push_back(atom(x,y,z,*ele,canonicalize_element(*ele)));
         }
         
         // parse 'bond block'
@@ -151,7 +183,7 @@ class sdf {
             std::copy( line + 6, line + 6 + 3, nt );
             int type = atoi(nt);
             
-            mol.m_bonds.push_back(bond(first,second,type));
+            mol.m_bonds.push_back(bond(first,second,type, canonicalize_bond_type(type)));
         }
         
         // just ignore the rest for now:
@@ -180,19 +212,37 @@ class sdf {
 //         while( memcmp( line, "$$$$", 4 ) != 0 && !is.eof() ) {
 //             is.getline(line, line_len);
 //         }
-        
+        //printf( "mol: %zd %zd\n", mol.m_atoms.size(), mol.m_bonds.size() );
         return true;
         
     }
+    
 public:
     sdf( std::ifstream &is ) {
         while( parse_molecule( m_molecules, is ) ) {
             printf( "mol: %zd\n", m_molecules.size() );
         }
-        getchar();
+//         getchar();
     }
     
 
+    const std::vector<molecule> &get_molecules() {
+     
+        return m_molecules;
+    }
+    
+    std::vector<const molecule *> get_molecule_ptrs() {
+        std::vector<const molecule *> molptr;//( m_molecules.size() );
+        
+        for( std::vector< molecule >::const_iterator it = m_molecules.begin(); it != m_molecules.end(); ++it ) {
+//             printf( "put: %p\n", &(*it));
+            if( it->m_header != "20637" && it->m_header != "20715" ) {
+                molptr.push_back(&(*it));
+            }
+        }
+        
+        return molptr;
+    }
 };
 } // namespace ivy_mike
 #endif

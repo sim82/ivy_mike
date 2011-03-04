@@ -23,7 +23,7 @@
 // #include <boost/weak_ptr.hpp>
 #include <boost/intrusive/slist.hpp>
 #include <list>
-namespace ivymike {
+namespace ivy_mike {
 
 
 

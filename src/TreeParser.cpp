@@ -20,7 +20,7 @@
 
 using std::cout;
 
-using namespace ivymike;
+using namespace ivy_mike;
 
 TreeParserMS::LN *TreeParserMS::LN::create( ln_pool &pool ) {
     
@@ -49,9 +49,9 @@ int main() {
     //ivymike::TreeParser tp( "./RAxML_bipartitions.1604.BEST.WITH" );
     
     boost::timer t;
-    ivymike::TreeParserMS::ln_pool pool;
-    ivymike::TreeParserMS tp( "/space/newPNAS/PNAS.ntree", pool );
-    ivymike::TreeParserMS::LN * n = tp.parse();
+    ivy_mike::TreeParserMS::ln_pool pool;
+    ivy_mike::TreeParserMS tp( "/space/newPNAS/PNAS.ntree", pool );
+    ivy_mike::TreeParserMS::LN * n = tp.parse();
     printf( "n: %f %d\n", n->backLen, n->data->isTip );
     
     assert( n->next->back != 0 && n->next->next->back != 0 );

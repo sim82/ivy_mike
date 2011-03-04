@@ -58,6 +58,11 @@ public:
         std::vector<atom> m_atoms;
         std::vector<bond> m_bonds;
         
+        inline int size() const {
+         
+            return int(m_atoms.size());
+        }
+        
         //std::map<std::string,std::string> m_extra;
         
     };

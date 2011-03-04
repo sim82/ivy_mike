@@ -248,6 +248,10 @@ public:
         
         return molptr;
     }
+    
+    int num_can_atom_types() {
+        return m_atomtype_map.size();
+    }
 };
 } // namespace ivy_mike
 #endif

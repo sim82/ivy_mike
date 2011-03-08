@@ -6,5 +6,20 @@
 namespace ivy_mike {
 
 double gettime(void);
+
+
+class timer {
+    double m_st;
+    
+public:
+    timer() : m_st(gettime()) {};
+    
+    double elapsed() const {
+        return gettime() - m_st;
+    }
+    
+    
+};
+
 }
 #endif

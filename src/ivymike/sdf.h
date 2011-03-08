@@ -138,7 +138,7 @@ private:
             
 //             printf( "%d %d\n", natoms, nbonds );
             
-            assert( memcmp( line + 33, " V2000", 6 ) == 0 );
+            //assert( memcmp( line + 33, " V2000", 6 ) == 0 );
         }
         
         mol.m_atoms.reserve( natoms );

@@ -225,7 +225,7 @@ private:
 public:
     sdf( std::ifstream &is ) {
         while( parse_molecule( m_molecules, is ) ) {
-            printf( "mol: %zd\n", m_molecules.size() );
+           // printf( "mol: %zd\n", m_molecules.size() );
         }
 //         getchar();
     }

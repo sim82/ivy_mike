@@ -20,23 +20,59 @@
 #include <string>
 #include <fstream>
 #include <cstring>
+#include <sstream>
 #include <cassert>
 #include <cstdlib>
+#include "boost/array.hpp"
 
 namespace ivy_mike {
 
 class sdf {
+class sanity_check : public std::runtime_error {
+};
+    
 public:
     struct atom {
         float   m_x, m_y, m_z;
-        char    m_ele;
+//        char    m_ele;
+        
+        typedef  boost::array<char,3> ele_t;
+        ele_t m_ele;
         int     m_can_ele;
         //std::string     m_extra;
         
-        atom( float x, float y, float z, int ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_ele(ele), m_can_ele(can_ele)
+        atom( float x, float y, float z, char *ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_can_ele(can_ele)
         {
+            m_ele = to_ele( ele );
+            
       //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
         }
+        
+        static ele_t to_ele( char *ele ) {
+         
+            ele_t r;
+            
+            int nns = 0;
+            for( int i = 0; i < ele_t::size(); i++ ) {
+             
+                if( !isspace(ele[i] ) ) {
+                    nns++;
+                    
+                }
+            }
+            
+            if( nns < 1 || nns > 2 ) {
+                std::stringstream ss;
+                ss << "nns < 1 || nns > 2: '" << ele[0] << ";" << ele[1] << ";" << ele[2] << "'";
+               
+                
+                throw std::runtime_error( ss.str() );
+            }
+            
+            std::copy( ele, ele + ele_t::size(), r.begin() );
+            return r;
+        }
+        
     };
     struct bond {
         std::pair <int,int>     m_atoms;
@@ -68,10 +104,14 @@ public:
     };
 private:
     std::map<int,int> m_bondtype_map;
-    std::map<char,int> m_atomtype_map;
+    std::map<atom::ele_t,int> m_atomtype_map;
     
-    int canonicalize_element(char ele) {
-        std::map< char, int >::iterator it = m_atomtype_map.find(ele);
+    
+    
+    int canonicalize_element( const atom::ele_t &ele ) {
+        
+        
+        std::map< atom::ele_t, int >::iterator it = m_atomtype_map.find( ele );
         if( it == m_atomtype_map.end() ) {
             int nid = m_atomtype_map.size();
             m_atomtype_map[ele] = nid;
@@ -82,6 +122,14 @@ private:
         }
         
     }
+    
+    int canonicalize_element(char *ele) {
+     
+        atom::ele_t et = atom::to_ele(ele);
+        return canonicalize_element(et);
+        
+    }
+    
     int canonicalize_bond_type(int type) {
         std::map< int, int >::iterator it = m_bondtype_map.find(type);
         if( it == m_bondtype_map.end() ) {
@@ -164,14 +212,23 @@ private:
             nt[3] = 0;
 
             // find first non-space character, which is the element symbol
-            char *ele = nt;
-            while( *ele != 0 && isspace(*ele)) {
-                ele++;
-            }
-               
-               
+//             char *ele = nt;
+//             while( *ele != 0 && isspace(*ele)) {
+//                 ele++;
+//             }
+//                
+//             char *ele_end = ele;
+//             
+//             while( *ele_end != 0 && !isspace(*ele_end)) {
+//                 ele_end++;
+//             }
+//             assert( ele_end - ele == 1 || ele_end - ele == 2 );
             
-            mol.m_atoms.push_back(atom(x,y,z,*ele,canonicalize_element(*ele)));
+//             char *ele = line + 30 + 3;
+            
+           //  printf( "ele: '%c' '%c' '%c'\n", nt[0], nt[1], nt[2] );
+            
+            mol.m_atoms.push_back(atom(x,y,z,nt,canonicalize_element(nt)));
         }
         
         // parse 'bond block'

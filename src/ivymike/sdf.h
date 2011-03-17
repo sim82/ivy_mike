@@ -48,12 +48,12 @@ public:
       //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
         }
         
-        static ele_t to_ele( char *ele ) {
+        static inline ele_t to_ele( char *ele ) {
          
             ele_t r;
             
             int nns = 0;
-            for( int i = 0; i < ele_t::size(); i++ ) {
+            for( uint i = 0; i < ele_t::size(); i++ ) {
              
                 if( !isspace(ele[i] ) ) {
                     nns++;
@@ -68,6 +68,8 @@ public:
                 
                 throw std::runtime_error( ss.str() );
             }
+            
+            
             
             std::copy( ele, ele + ele_t::size(), r.begin() );
             return r;
@@ -106,7 +108,7 @@ private:
     std::map<int,int> m_bondtype_map;
     std::map<atom::ele_t,int> m_atomtype_map;
     
-    
+    const bool m_allow_hydrogen;
     
     int canonicalize_element( const atom::ele_t &ele ) {
         
@@ -228,6 +230,26 @@ private:
             
            //  printf( "ele: '%c' '%c' '%c'\n", nt[0], nt[1], nt[2] );
             
+            if( !m_allow_hydrogen ) {
+             
+                int nns = 0;
+                bool is_h = false;
+                
+                for( int i = 0; i < 3; i++ ) {
+                    if( !isspace(nt[i]) ) {
+                        nns++;
+                    }
+                    if( nt[i] == 'h' || nt[i] == 'H' ) {
+                        is_h = true;
+                    }
+                }
+                if( nns == 1 && is_h ) {
+                    throw std::runtime_error( "molecule in sdf contains hydrogen, while allow_hydrogen is not set" );   
+                }
+                
+            }
+            
+            
             mol.m_atoms.push_back(atom(x,y,z,nt,canonicalize_element(nt)));
         }
         
@@ -280,7 +302,7 @@ private:
     }
     
 public:
-    sdf( std::ifstream &is ) {
+    sdf( std::ifstream &is, bool allow_hydrogen = false ) : m_allow_hydrogen(allow_hydrogen) {
         while( parse_molecule( m_molecules, is ) ) {
            // printf( "mol: %zd\n", m_molecules.size() );
         }

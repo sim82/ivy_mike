@@ -16,7 +16,7 @@
 
 #include "ivymike/sdf.h"
 #include <cassert>
-using ivy_mike::sdf;
+using namespace ivy_mike;
 
 int main( int argc, char* argv[]) {
     const char *filename = argv[1];
@@ -24,6 +24,6 @@ int main( int argc, char* argv[]) {
     std::ifstream is( filename );
     
     
-    sdf s(is);
+    ivy_mike::sdf_full s(is);
     
 }

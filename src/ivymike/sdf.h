@@ -23,97 +23,198 @@
 #include <sstream>
 #include <cassert>
 #include <cstdlib>
+#include <stdint.h>
 #include "boost/array.hpp"
 
 namespace ivy_mike {
 
-class sdf {
+    
+struct sdf_int_full {
+struct atom {
+    float   m_x, m_y, m_z;
+//        char    m_ele;
+    
+    typedef  boost::array<char,3> ele_t;
+    ele_t m_ele;
+    int     m_can_ele;
+    //std::string     m_extra;
+    
+    atom( float x, float y, float z, char *ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_can_ele(can_ele)
+    {
+        m_ele = to_ele( ele );
+        
+    //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
+    }
+    
+    static inline ele_t to_ele( char *ele ) {
+        
+        ele_t r;
+        
+        int nns = 0;
+        for( uint i = 0; i < ele_t::size(); i++ ) {
+            
+            if( !isspace(ele[i] ) ) {
+                nns++;
+                
+            }
+        }
+        
+        if( nns < 1 || nns > 2 ) {
+            std::stringstream ss;
+            ss << "nns < 1 || nns > 2: '" << ele[0] << ";" << ele[1] << ";" << ele[2] << "'";
+            
+            
+            throw std::runtime_error( ss.str() );
+        }
+        
+        
+        
+        std::copy( ele, ele + ele_t::size(), r.begin() );
+        return r;
+    }
+    
+};
+struct bond {
+    std::pair <int,int>     m_atoms;
+    int                     m_type;
+    int                     m_can_type;
+    // std::string             m_extra;
+    
+    
+    bond( int first, int second, int type, int can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
+    {
+    //    printf( "bond: %d %d %d\n", m_atoms.first, m_atoms.second, m_type );
+    }
+    
+};
+
+struct molecule {
+    std::string     m_header;
+    std::string     m_comment;
+    std::vector<atom> m_atoms;
+    std::vector<bond> m_bonds;
+    
+    inline int size() const {
+        
+        return int(m_atoms.size());
+    }
+    
+    //std::map<std::string,std::string> m_extra;
+    
+};
+    
+    
+};
+    
+    
+struct sdf_int_eco {
+ 
+struct atom {
+    typedef  boost::array<char,3> ele_t;
+    ele_t m_ele;
+    uint8_t     m_can_ele;
+    //std::string     m_extra;
+    
+    atom( float x, float y, float z, char *ele, int can_ele ) : m_can_ele(can_ele)
+    {
+        //assert(can_ele >= 0 && can_ele <= 255 );
+        
+        if( can_ele < 0 || can_ele > 255 ) {
+                
+            throw std::runtime_error( "can_ele out of range for sdf_eco" );
+        }
+        
+        m_ele = to_ele( ele );
+        
+    //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
+    }
+    
+    static inline ele_t to_ele( char *ele ) {
+        
+        ele_t r;
+        
+        int nns = 0;
+        for( uint i = 0; i < ele_t::size(); i++ ) {
+            
+            if( !isspace(ele[i] ) ) {
+                nns++;
+                
+            }
+        }
+        
+        if( nns < 1 || nns > 2 ) {
+            std::stringstream ss;
+            ss << "nns < 1 || nns > 2: '" << ele[0] << ";" << ele[1] << ";" << ele[2] << "'";
+            
+            
+            throw std::runtime_error( ss.str() );
+        }
+        
+        
+        
+        std::copy( ele, ele + ele_t::size(), r.begin() );
+        return r;
+    }
+    
+};
+struct bond {
+    std::pair <uint8_t,uint8_t>     m_atoms;
+    uint8_t                     m_type;
+    uint8_t                     m_can_type;
+    // std::string             m_extra;
+    
+    
+    bond( uint first, uint second, uint type, uint can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
+    {
+        if( first > 255 || second > 255 || type > 255 || can_type > 255 ) {
+         
+            throw std::runtime_error( "bond parameter out of range for sdf_eco" );
+        }
+    //    printf( "bond: %d %d %d\n", m_atoms.first, m_atoms.second, m_type );
+    }
+    
+};
+
+struct molecule {
+    std::string     m_header;
+    
+    std::vector<atom> m_atoms;
+    std::vector<bond> m_bonds;
+    
+    inline int size() const {
+        
+        return int(m_atoms.size());
+    }
+    
+    //std::map<std::string,std::string> m_extra;
+    
+};   
+    
+};
+    
+    
+template<class sdf_int_>
+class sdf_impl {
 class sanity_check : public std::runtime_error {
 };
     
 public:
-    struct atom {
-        float   m_x, m_y, m_z;
-//        char    m_ele;
-        
-        typedef  boost::array<char,3> ele_t;
-        ele_t m_ele;
-        int     m_can_ele;
-        //std::string     m_extra;
-        
-        atom( float x, float y, float z, char *ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_can_ele(can_ele)
-        {
-            m_ele = to_ele( ele );
-            
-      //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
-        }
-        
-        static inline ele_t to_ele( char *ele ) {
-         
-            ele_t r;
-            
-            int nns = 0;
-            for( uint i = 0; i < ele_t::size(); i++ ) {
-             
-                if( !isspace(ele[i] ) ) {
-                    nns++;
-                    
-                }
-            }
-            
-            if( nns < 1 || nns > 2 ) {
-                std::stringstream ss;
-                ss << "nns < 1 || nns > 2: '" << ele[0] << ";" << ele[1] << ";" << ele[2] << "'";
-               
-                
-                throw std::runtime_error( ss.str() );
-            }
-            
-            
-            
-            std::copy( ele, ele + ele_t::size(), r.begin() );
-            return r;
-        }
-        
-    };
-    struct bond {
-        std::pair <int,int>     m_atoms;
-        int                     m_type;
-        int                     m_can_type;
-       // std::string             m_extra;
-        
-        
-        bond( int first, int second, int type, int can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
-        {
-        //    printf( "bond: %d %d %d\n", m_atoms.first, m_atoms.second, m_type );
-        }
-        
-    };
-    
-    struct molecule {
-        std::string     m_header;
-        std::string     m_comment;
-        std::vector<atom> m_atoms;
-        std::vector<bond> m_bonds;
-        
-        inline int size() const {
-         
-            return int(m_atoms.size());
-        }
-        
-        //std::map<std::string,std::string> m_extra;
-        
-    };
+     typedef typename sdf_int_::atom::ele_t atom_ele_t;
+     typedef typename sdf_int_::atom atom;
+     typedef typename sdf_int_::bond bond;
+     typedef typename sdf_int_::molecule molecule;
 private:
+   
+    
     std::map<int,int> m_bondtype_map;
-    std::map<atom::ele_t,int> m_atomtype_map;
+    std::map<atom_ele_t,int> m_atomtype_map;
     
     const bool m_allow_hydrogen;
     
-    int canonicalize_element( const atom::ele_t &ele ) {
+    int canonicalize_element( const atom_ele_t &ele ) {
         
         
-        std::map< atom::ele_t, int >::iterator it = m_atomtype_map.find( ele );
+        typename std::map< atom_ele_t, int >::iterator it = m_atomtype_map.find( ele );
         if( it == m_atomtype_map.end() ) {
             int nid = m_atomtype_map.size();
             m_atomtype_map[ele] = nid;
@@ -127,7 +228,7 @@ private:
     
     int canonicalize_element(char *ele) {
      
-        atom::ele_t et = atom::to_ele(ele);
+        atom_ele_t et = atom::to_ele(ele);
         return canonicalize_element(et);
         
     }
@@ -302,7 +403,7 @@ private:
     }
     
 public:
-    sdf( std::ifstream &is, bool allow_hydrogen = false ) : m_allow_hydrogen(allow_hydrogen) {
+    sdf_impl( std::ifstream &is, bool allow_hydrogen = true ) : m_allow_hydrogen(allow_hydrogen) {
         while( parse_molecule( m_molecules, is ) ) {
            // printf( "mol: %zd\n", m_molecules.size() );
         }
@@ -318,7 +419,7 @@ public:
     std::vector<const molecule *> get_molecule_ptrs() {
         std::vector<const molecule *> molptr;//( m_molecules.size() );
         
-        for( std::vector< molecule >::const_iterator it = m_molecules.begin(); it != m_molecules.end(); ++it ) {
+        for( typename std::vector< molecule >::const_iterator it = m_molecules.begin(); it != m_molecules.end(); ++it ) {
 //             printf( "put: %p\n", &(*it));
             if( it->m_header != "20637" && it->m_header != "20715" ) {
                 molptr.push_back(&(*it));
@@ -332,6 +433,11 @@ public:
         return m_atomtype_map.size();
     }
 };
+
+typedef sdf_impl<sdf_int_full> sdf_full;
+typedef sdf_impl<sdf_int_eco> sdf_eco;
+
+
 } // namespace ivy_mike
 #endif
 

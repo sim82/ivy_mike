@@ -30,6 +30,7 @@ namespace ivy_mike {
 
     
 struct sdf_int_full {
+    typedef sdf_int_full sdf_int;
 struct atom {
     float   m_x, m_y, m_z;
 //        char    m_ele;
@@ -42,6 +43,13 @@ struct atom {
     atom( float x, float y, float z, char *ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_can_ele(can_ele)
     {
         m_ele = to_ele( ele );
+        
+    //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
+    }
+    
+    atom( float x, float y, float z, ele_t ele, int can_ele ) : m_x(x), m_y(y), m_z(z), m_ele(ele), m_can_ele(can_ele)
+    {
+        
         
     //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
     }
@@ -108,7 +116,7 @@ struct molecule {
     
     
 struct sdf_int_eco {
- 
+typedef sdf_int_eco sdf_int;
 struct atom {
     typedef  boost::array<char,3> ele_t;
     ele_t m_ele;
@@ -125,6 +133,19 @@ struct atom {
         }
         
         m_ele = to_ele( ele );
+        
+    //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
+    }
+    
+    atom( float x, float y, float z, ele_t ele, int can_ele ) : m_ele(ele), m_can_ele(can_ele)
+    {
+        //assert(can_ele >= 0 && can_ele <= 255 );
+        
+        if( can_ele < 0 || can_ele > 255 ) {
+                
+            throw std::runtime_error( "can_ele out of range for sdf_eco" );
+        }
+        
         
     //      printf( "atom: %f %f %f %c\n", x,y,z,ele);
     }
@@ -199,6 +220,7 @@ class sanity_check : public std::runtime_error {
 };
     
 public:
+     typedef typename sdf_int_::sdf_int sdf_int;
      typedef typename sdf_int_::atom::ele_t atom_ele_t;
      typedef typename sdf_int_::atom atom;
      typedef typename sdf_int_::bond bond;
@@ -416,14 +438,17 @@ public:
         return m_molecules;
     }
     
-    std::vector<const molecule *> get_molecule_ptrs() {
+    std::vector<const molecule *> get_molecule_ptrs( size_t minsize = 0 ) {
         std::vector<const molecule *> molptr;//( m_molecules.size() );
         
         for( typename std::vector< molecule >::const_iterator it = m_molecules.begin(); it != m_molecules.end(); ++it ) {
 //             printf( "put: %p\n", &(*it));
-            if( it->m_header != "20637" && it->m_header != "20715" ) {
+            //if( it->m_header != "20637" && it->m_header != "20715" ) {
+            
+            if( it->m_atoms.size() >= minsize ) {
                 molptr.push_back(&(*it));
             }
+            //}
         }
         
         return molptr;
@@ -431,6 +456,62 @@ public:
     
     int num_can_atom_types() {
         return m_atomtype_map.size();
+    }
+};
+template<class sdf_int_>
+class sdf_mol_builder_impl {
+public:    
+    typedef typename sdf_int_::sdf_int sdf_int;
+    typedef typename sdf_int_::atom::ele_t atom_ele_t;
+    typedef typename sdf_int_::atom atom;
+    typedef typename sdf_int_::bond bond;
+    typedef typename sdf_int_::molecule molecule;   
+private:
+    
+    molecule m_mol;
+    
+public:
+    
+    void add_atom( uint aid, atom_ele_t &at ) {
+     
+        if( aid > m_mol.m_atoms.size() ) {
+         
+            throw std::runtime_error( "aid > m_mol.m_atoms.size()" );
+        }
+        
+        if( aid == m_mol.m_atoms.size() ) {
+         
+            m_mol.m_atoms.push_back( atom( 0.0, 0.0, 0.0, at, 0 ) );
+//             m_mol.add_atom( atom( 0.0, 0.0, 0.0, at, 0 ) );
+        } else {
+         
+            if( m_mol.m_atoms[aid].m_ele != at ) {
+                throw std::runtime_error( "inconsistence: m_mol.m_atoms[aid].m_ele != at" );
+            }
+        }
+    }
+    
+    void add_bond( int aid1, int aid2, atom_ele_t at1, atom_ele_t at2, int bt ) {
+        if( aid1 < aid2 ) {
+            add_atom( aid1, at1 );
+            add_atom( aid2, at2 );
+        } else {
+            add_atom( aid1, at1 );
+            add_atom( aid2, at2 );
+        }
+
+        m_mol.m_bonds.push_back( bond( aid1, aid2, bt, 0 ));
+    }
+    
+    const molecule &get_mol() {
+     
+        return m_mol;
+    }
+    
+    static void print_mol( const molecule &mol ) {
+        std::cout << "molecule: " << mol.m_atoms.size() << " " << mol.m_bonds.size() << "\n";
+     
+        
     }
 };
 

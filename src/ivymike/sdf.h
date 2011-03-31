@@ -101,6 +101,26 @@ struct molecule {
     std::string     m_comment;
     std::vector<atom> m_atoms;
     std::vector<bond> m_bonds;
+//     molecule( const molecule &other ) 
+//         : m_header(other.m_header), 
+//         m_comment(other.m_comment), 
+//         m_atoms( other.m_atoms ), 
+//         m_bonds( other.m_bonds )
+//     {}
+//     
+//     molecule &operator=(const molecule &other ) {
+//         m_header = other.m_header;
+//         m_comment = other.m_comment;
+//         m_atoms = other.m_atoms;
+//         m_bonds = other.m_bonds;
+//         
+//         return *this;
+//     }
+    
+    molecule() {}
+    
+    molecule( const char *header, const char *comment ) : m_header( header ), m_comment(comment)
+    {}
     
     inline int size() const {
         
@@ -201,6 +221,26 @@ struct molecule {
     
     std::vector<atom> m_atoms;
     std::vector<bond> m_bonds;
+    
+//     molecule( const molecule &other ) 
+//         : m_header(other.m_header), 
+//         m_atoms( other.m_atoms ), 
+//         m_bonds( other.m_bonds )
+//     {}
+//     
+//     molecule &operator=(const molecule &other ) {
+//         m_header = other.m_header;
+//         m_atoms = other.m_atoms;
+//         m_bonds = other.m_bonds;
+//         
+//         return *this;
+//     }
+    
+    
+    molecule() {}
+    
+    molecule( const char *header, const char *comment ) : m_header(header)
+    {}
     
     inline int size() const {
         
@@ -457,63 +497,117 @@ public:
     int num_can_atom_types() {
         return m_atomtype_map.size();
     }
-};
-template<class sdf_int_>
-class sdf_mol_builder_impl {
-public:    
-    typedef typename sdf_int_::sdf_int sdf_int;
-    typedef typename sdf_int_::atom::ele_t atom_ele_t;
-    typedef typename sdf_int_::atom atom;
-    typedef typename sdf_int_::bond bond;
-    typedef typename sdf_int_::molecule molecule;   
-private:
     
-    molecule m_mol;
     
-public:
-    
-    void add_atom( uint aid, atom_ele_t &at ) {
+    static void pad( char c, const std::string &s, int w, std::ostream &os ) {
      
-        if( aid > m_mol.m_atoms.size() ) {
-         
-            throw std::runtime_error( "aid > m_mol.m_atoms.size()" );
+        std::stringstream sp;
+        int len = 0;
+        while( len + s.size() < w ) {
+            sp << c;
+            len++;
         }
         
-        if( aid == m_mol.m_atoms.size() ) {
+        os << sp.str() << s;
+    }
+    static void pad( char c, int v, int w, std::ostream &os ) {
+        std::stringstream ss;
+        ss << v;
+        pad( c, ss.str(), w, os );
+    }
+
+    static void pad( char c, double v, int w, std::ostream &os ) {
+        std::stringstream ss;
+        ss << v;
+        pad( c, ss.str(), w, os );
+    }
+
+
+    static void write_mdl( const molecule &mol, std::ostream &os ) {
+        os << mol.m_header << "\n";
+           
+        //os << " " << mol.m_comment << "\n";
+        os << mol.m_atoms.size() << " " << mol.m_bonds.size() << "\n";
+        
+        
+        for( typename std::vector<atom>::const_iterator it = mol.m_atoms.begin(); it != mol.m_atoms.end(); ++it ) {
          
-            m_mol.m_atoms.push_back( atom( 0.0, 0.0, 0.0, at, 0 ) );
-//             m_mol.add_atom( atom( 0.0, 0.0, 0.0, at, 0 ) );
-        } else {
+            os << it->m_ele[1] << it->m_ele[2] << "\n";
+            
+        }
+        
+        for( typename std::vector<bond>::const_iterator it = mol.m_bonds.begin(); it != mol.m_bonds.end(); ++it ) {
          
-            if( m_mol.m_atoms[aid].m_ele != at ) {
-                throw std::runtime_error( "inconsistence: m_mol.m_atoms[aid].m_ele != at" );
+            os << "bond: " << int(it->m_atoms.first) << " " << int(it->m_atoms.second) << " " << int(it->m_type) << "\n";
+        }
+        
+        
+    }
+    
+  
+    class mol_builder {
+    public:    
+        typedef typename sdf_int_::sdf_int sdf_int;
+        typedef typename sdf_int_::atom::ele_t atom_ele_t;
+        typedef typename sdf_int_::atom atom;
+        typedef typename sdf_int_::bond bond;
+        typedef typename sdf_int_::molecule molecule;   
+    private:
+        
+        molecule m_mol;
+        
+    public:
+        mol_builder() :m_mol( "default", "built by sdf_mol_builder_impl") {
+            
+        }
+        void add_atom( uint aid, atom_ele_t &at ) {
+        
+            if( aid > m_mol.m_atoms.size() ) {
+            
+                throw std::runtime_error( "aid > m_mol.m_atoms.size()" );
+            }
+            
+            if( aid == m_mol.m_atoms.size() ) {
+            
+                m_mol.m_atoms.push_back( atom( 0.0, 0.0, 0.0, at, 0 ) );
+    //             m_mol.add_atom( atom( 0.0, 0.0, 0.0, at, 0 ) );
+            } else {
+            
+                if( m_mol.m_atoms[aid].m_ele != at ) {
+                    throw std::runtime_error( "inconsistence: m_mol.m_atoms[aid].m_ele != at" );
+                }
             }
         }
-    }
-    
-    void add_bond( int aid1, int aid2, atom_ele_t at1, atom_ele_t at2, int bt ) {
-        if( aid1 < aid2 ) {
-            add_atom( aid1, at1 );
-            add_atom( aid2, at2 );
-        } else {
-            add_atom( aid1, at1 );
-            add_atom( aid2, at2 );
-        }
-
-        m_mol.m_bonds.push_back( bond( aid1, aid2, bt, 0 ));
-    }
-    
-    const molecule &get_mol() {
-     
-        return m_mol;
-    }
-    
-    static void print_mol( const molecule &mol ) {
-        std::cout << "molecule: " << mol.m_atoms.size() << " " << mol.m_bonds.size() << "\n";
-     
         
-    }
+        void add_bond( int aid1, int aid2, atom_ele_t at1, atom_ele_t at2, int bt ) {
+            
+            
+            if( aid1 < aid2 ) {
+                add_atom( aid1, at1 );
+                add_atom( aid2, at2 );
+            } else {
+                add_atom( aid1, at1 );
+                add_atom( aid2, at2 );
+            }
+
+            m_mol.m_bonds.push_back( bond( aid1 + 1, aid2 + 1, bt, 0 ));
+        }
+        
+        const molecule &get_mol() {
+        
+            return m_mol;
+        }
+        
+        static void print_mol( const molecule &mol ) {
+//             std::cout << "molecule: " << mol.m_atoms.size() << " " << mol.m_bonds.size() << "\n";
+        
+            
+        }
+        
+        
+    };
 };
+
 
 typedef sdf_impl<sdf_int_full> sdf_full;
 typedef sdf_impl<sdf_int_eco> sdf_eco;

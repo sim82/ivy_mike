@@ -21,6 +21,7 @@
 #include <fstream>
 #include <cstring>
 #include <sstream>
+#include <iostream>
 #include <cassert>
 #include <cstdlib>
 #include <stdint.h>

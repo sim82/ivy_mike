@@ -18,6 +18,7 @@
 #include <exception>
 #include <cstdlib>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
 // #include <boost/weak_ptr.hpp>
@@ -666,6 +667,15 @@ struct adata {
     
     virtual void visit() {}
 
+    virtual void print( std::ostream &os ) const {
+        if( isTip ) {
+        
+            os << "(TIP:" << m_serial << ": " << tipName << ")";
+        } else {
+            os << "(INNER:" << m_serial << ")";
+        }    
+    }
+
 };
     
 struct ldata {
@@ -686,7 +696,7 @@ struct lnode
     static lnode *create( ln_pool &pool );
 
     lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false) {}
-    ~lnode() {
+    virtual ~lnode() {
     }
 
     boost::shared_ptr<adata> m_data;
@@ -700,18 +710,14 @@ struct lnode
     std::string backLabel;
 
     bool mark;
+    
+    
+    
 };
 
-inline std::ostream &operator<<(std::ostream &os, const lnode &n ) {
-
-    if( n.m_data->isTip ) {
-    
-        os << "(TIP:" << n.m_data->m_serial << ": " << n.m_data->tipName << ")";
-    } else {
-        os << "(INNER:" << n.m_data->m_serial << ")";
-    }
-    
-    
+inline std::ostream &operator<<(std::ostream &os, const adata &ad ) {
+    ad.print( os );
+    return os;
 }
 
 

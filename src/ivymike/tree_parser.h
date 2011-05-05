@@ -695,10 +695,22 @@ struct lnode
 
     static lnode *create( ln_pool &pool );
 
-    lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false) {}
+	boost::shared_ptr<lnode> m_thisptr;
+	
+    lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false), m_thisptr(this) {}
     virtual ~lnode() {
+		std::cout << "~lnode\n";
     }
 
+	boost::weak_ptr<lnode>get_smart_ptr() {
+		return boost::weak_ptr<lnode>(m_thisptr);
+	}
+
+	boost::shared_ptr<lnode>dealloc() {
+		shared_ptr<lnode>tmp(m_thisptr);
+		m_thisptr.reset();
+		return tmp;
+	}
     boost::shared_ptr<adata> m_data;
     boost::scoped_ptr<ldata> m_ldata;
     //LN *next;
@@ -795,10 +807,10 @@ public:
             lt::iterator next = it;
             next++;
             if( !it->mark ) {
-                 lnode *ln = &(*it);
+                //lnode *ln = &(*it);
                 m_list.erase(it);
-                delete ln;
-
+                //delete ln;
+				it->dealloc();
             }
             
             it = next;

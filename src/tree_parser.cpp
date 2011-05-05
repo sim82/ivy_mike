@@ -14,7 +14,7 @@
 
 
 #include <auto_ptr.h>
-#include "ivymike/TreeParser.h"
+#include "ivymike/tree_parser.h"
 #include <boost/timer.hpp>
 #include <iostream>
 
@@ -22,15 +22,21 @@ using std::cout;
 
 using namespace ivy_mike;
 
-TreeParserMS::LN *TreeParserMS::LN::create( ln_pool &pool ) {
+int tree_parser_ms::adata::s_serial = 0;
+
+tree_parser_ms::lnode *tree_parser_ms::lnode::create( ln_pool &pool ) {
     
-    LN *n = pool.alloc();
+    lnode *n = pool.alloc();
     n->next = pool.alloc();
     n->next->next = pool.alloc();
     n->next->next->next = n;
-    n->data.reset(new AData());
-    n->next->data = n->data;
-    n->next->next->data = n->data;
+    
+    n->m_ldata.reset(pool.get_adata_factory().alloc_ldata());
+    n->next->m_ldata.reset(pool.get_adata_factory().alloc_ldata());
+    n->next->next->m_ldata.reset(pool.get_adata_factory().alloc_ldata());
+    n->m_data.reset( pool.get_adata_factory().alloc_adata() );
+    n->next->m_data = n->m_data;
+    n->next->next->m_data = n->m_data;
     return n;
     
 //     LN *n = new LN();
@@ -44,50 +50,7 @@ TreeParserMS::LN *TreeParserMS::LN::create( ln_pool &pool ) {
 }
 
 
-int main() {
-//     getchar();
-    //ivymike::TreeParser tp( "./RAxML_bipartitions.1604.BEST.WITH" );
-    
-    boost::timer t;
-    ivy_mike::TreeParserMS::ln_pool pool;
-    ivy_mike::TreeParserMS tp( "/space/newPNAS/PNAS.ntree", pool );
-    ivy_mike::TreeParserMS::LN * n = tp.parse();
-    printf( "n: %f %d\n", n->backLen, n->data->isTip );
-    
-    assert( n->next->back != 0 && n->next->next->back != 0 );
-    
-    n->next->back->back = n->next->next->back;
-    n->next->next->back->back = n->next->back;
-    n = n->next->back;
-    
-    
-    {
-        boost::timer t2;
-        pool.clear();
-        pool.mark(n);
-        pool.sweep();
-        
-        cout << t2.elapsed() << std::endl;
-    }
-    
-    
-    {
-        boost::timer t2;
-        pool.clear();
-     //   pool.mark(n);
-        pool.sweep();
-        
-        cout << t2.elapsed() << std::endl;
-    }
-    //ivymike::LN *n = tp.parse();
-    
-//     getchar();
-    //ivymike::LN::free( n );
-//     delete n;
-//     getchar();
-    
-    cout << t.elapsed() << std::endl;
-}
+
 
 
 // int main() {

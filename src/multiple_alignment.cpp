@@ -1,5 +1,6 @@
 #include <fstream>
 #include <cassert>
+#include <stdexcept>
 
 #include "ivymike/multiple_alignment.h"
 
@@ -9,6 +10,10 @@ using namespace ivy_mike;
 bool multiple_alignment::load_phylip( std::istream &is ) {
     size_t nTaxon;
     size_t seqLen;
+    
+    if( !is.good() ) {
+        throw std::runtime_error( "cannot read phylip file" );
+    }
 
     is >> nTaxon;
     is >> seqLen;
@@ -25,11 +30,11 @@ bool multiple_alignment::load_phylip( std::istream &is ) {
         is >> name;
         is >> seq;
 
-		if( is.eof() ) {
-				
-			break;
-		}
-		
+        if( is.eof() ) {
+            
+            break;
+        }
+        
         names.push_back(name);
         data.push_back( std::vector<uint8_t>(seq.begin(), seq.end()));
 		

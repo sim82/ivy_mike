@@ -17,17 +17,30 @@
 #include <fstream>
 #include <stdexcept>
 #include <cstdlib>
+
+
+#if 0
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
+
+namespace sptr = boost;
+#else
+#include <tr1/memory>
+#include <memory>
+namespace sptr = std::tr1;
+
+
+
+#endif
 // #include <boost/weak_ptr.hpp>
 #include <boost/intrusive/slist.hpp>
 #include <list>
 namespace ivy_mike {
 
 
-
+    
 // class tree_parser {
 // public:
 //     struct ln {
@@ -701,18 +714,18 @@ struct lnode
     virtual ~lnode() {
 // 		std::cout << "~lnode\n";
     }
-
-	boost::weak_ptr<lnode>get_smart_ptr() {
-		return boost::weak_ptr<lnode>(m_thisptr);
-	}
-
-	boost::shared_ptr<lnode>dealloc() {
-		shared_ptr<lnode>tmp(m_thisptr);
-		m_thisptr.reset();
-		return tmp;
-	}
-    boost::shared_ptr<adata> m_data;
-    boost::scoped_ptr<ldata> m_ldata;
+    
+    sptr::weak_ptr<lnode>get_smart_ptr() {
+        return sptr::weak_ptr<lnode>(m_thisptr);
+    }
+    
+    sptr::shared_ptr<lnode>dealloc() {
+        sptr::shared_ptr<lnode>tmp(m_thisptr);
+        m_thisptr.reset();
+        return tmp;
+    }
+    sptr::shared_ptr<adata> m_data;
+    sptr::shared_ptr<ldata> m_ldata;
     //LN *next;
     lnode *next;
     lnode *back;
@@ -723,7 +736,7 @@ struct lnode
 
     bool mark;
     
-    boost::shared_ptr<lnode> m_thisptr;
+    sptr::shared_ptr<lnode> m_thisptr;
     
     bool towards_root;
     
@@ -756,11 +769,11 @@ class ln_pool
  
     lt m_list;
 
-    boost::shared_ptr<node_data_factory> m_ad_fact;
+    sptr::shared_ptr<node_data_factory> m_ad_fact;
     
 public:
     
-    ln_pool( shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
+    ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}
     
     

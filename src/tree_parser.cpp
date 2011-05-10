@@ -15,7 +15,7 @@
 
 #include <auto_ptr.h>
 #include "ivymike/tree_parser.h"
-#include <boost/timer.hpp>
+
 #include <iostream>
 
 using std::cout;

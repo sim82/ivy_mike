@@ -60,7 +60,7 @@ struct atom {
         ele_t r;
         
         int nns = 0;
-        for( uint i = 0; i < ele_t::size(); i++ ) {
+        for( unsigned int i = 0; i < ele_t::size(); i++ ) {
             
             if( !isspace(ele[i] ) ) {
                 nns++;
@@ -176,7 +176,7 @@ struct atom {
         ele_t r;
         
         int nns = 0;
-        for( uint i = 0; i < ele_t::size(); i++ ) {
+        for( unsigned int i = 0; i < ele_t::size(); i++ ) {
             
             if( !isspace(ele[i] ) ) {
                 nns++;
@@ -206,7 +206,7 @@ struct bond {
     // std::string             m_extra;
     
     
-    bond( uint first, uint second, uint type, uint can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
+    bond( unsigned int first, unsigned int second, unsigned int type, unsigned int can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
     {
         if( first > 255 || second > 255 || type > 255 || can_type > 255 ) {
          
@@ -561,7 +561,7 @@ public:
         mol_builder() :m_mol( "default", "built by sdf_mol_builder_impl") {
             
         }
-        void add_atom( uint aid, atom_ele_t &at ) {
+        void add_atom( unsigned int aid, atom_ele_t &at ) {
         
             if( aid > m_mol.m_atoms.size() ) {
             

@@ -1,4 +1,9 @@
+
+#ifndef WIN32
 #include <sys/time.h>
+#else 
+#include <time.h>
+#endif
 #include "ivymike/time.h"
 
 

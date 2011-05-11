@@ -17,9 +17,10 @@
 #include <fstream>
 #include <stdexcept>
 #include <cstdlib>
+#include <sstream>
+#include <cctype>
 
-
-#if 0
+#if WIN32
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -683,7 +684,7 @@ struct adata {
     virtual void print( std::ostream &os ) const {
         if( isTip ) {
         
-            os << "(TIP:" << m_serial << ": " << tipName << ")";
+            os << "(TIP:" << m_serial << ": " << tipName.c_str() << ")";
         } else {
             os << "(INNER:" << m_serial << ")";
         }    
@@ -926,7 +927,7 @@ private:
     }
 
     void skipWhitespace() {
-        while ( ptr != inputA.end() && std::iswspace(*ptr) ) {
+        while ( ptr != inputA.end() && std::isspace(*ptr) ) {
             ++ptr;
         }
         if ( ptr == inputA.end() ) {
@@ -954,7 +955,10 @@ private:
 
             if ( lend - (lstart+1) <= 0 ) {
                 printLocation();
-                throw (std::string("bad branch label: ") + substring(lstart, ptr) );
+
+				std::stringstream ss;
+				ss << "bad branch label: " << substring(lstart, ptr);
+                throw ss.str();
             }
 
             return substring(lstart + 1, lend);

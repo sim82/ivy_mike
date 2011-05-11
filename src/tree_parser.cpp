@@ -13,7 +13,7 @@
  */
 
 
-#include <auto_ptr.h>
+#include <memory>
 #include "ivymike/tree_parser.h"
 
 #include <iostream>

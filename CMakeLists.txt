@@ -1,5 +1,9 @@
 cmake_minimum_required( VERSION 2.8 )
+
+IF(WIN32)
 include_directories( C:\\src\\boost_1_46_1)
+ENDIF()
+
 
 PROJECT(ivymike)
 

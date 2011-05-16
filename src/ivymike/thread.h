@@ -1,46 +1,88 @@
 #ifndef __ivy_mike__thread_h
 #define __ivy_mike__thread_h
 
+// WARNING: this implementation is not very exception safe. use boost if you are interested in correctness...
+
 #ifdef WIN32
 #error ivy_mike threads not available on windows
 #endif
 
 #include <pthread.h>
 #include <vector>
-
-
+#include <memory>
+#include <stdexcept>
 
 namespace ivy_mike {
 class thread {
-    pthread_t m_thread;
     
+public:
+    typedef pthread_t native_handle_type;
+private:
+    native_handle_type m_thread;
+    bool m_valid_thread;
     
     thread( const thread &other );
     const thread &operator=( const thread &other );
     
     template<typename callable>
     static void *call( void *f ) {
-        callable *c = static_cast<callable *>(f);
-        
+        std::auto_ptr<callable> c(static_cast<callable *>(f));
         (*c)();
-        delete c;
+       
         return 0;
     }
     
 public:
-    template<typename callable>
-    thread( const callable &c ) {
-//         std::cout << "bla\n";
+    
+    thread() : m_valid_thread( false ) {
         
-        callable *cp = new callable(c);
-//         *cp = c;
-        pthread_create( &m_thread, 0, call<callable>, cp );
     }
     
+    template<typename callable>
+    thread( const callable &c ) {
+        // UUHM, this code looks a bit clumsy, but I could not figure out anything better without cheating (=looking at the boost::thread code)
+        // TODO: pthread error handling!
+        int ret = pthread_create( &m_thread, 0, call<callable>, new callable(c) );
+        
+        if( ret != EAGAIN ) {
+            throw std::runtime_error( "could not create thread: resource_unavailable_try_again" );
+        } else if( ret != 0 ) {
+            throw std::runtime_error( "could not create thread: internal error" );
+        } else {
+            m_valid_thread = true;
+        }
+    }
+    
+    ~thread() {
+        // this (=nothing) is actually the right thing to do (TM) if I read 30.3.1.3 if the iso c++0x standard corrctly
+        if( joinable() ) {
+            std::cerr << "ivy_mike::thread warning: destructor of joinable thread called. possible ressource leak\n";
+        }
+    }
+    
+    void swap( thread &other ) {
+        std::swap( m_thread, other.m_thread );
+        std::swap( m_valid_thread, other.m_valid_thread );
+    }
+    
+    bool joinable() {
+        return m_valid_thread;
+    }
     
     void join() {
-        void *rv;
-        pthread_join(m_thread, &rv );
+        
+        if( joinable() ) {
+            void *rv;
+            pthread_join(m_thread, &rv );
+            m_valid_thread = false;
+        }
+    }
+    
+    native_handle_type native_handle() {
+        if( !joinable() ) {
+            throw std::runtime_error( "native_handle: thread not joinable" );
+        }
+        return m_thread;
     }
 };
 
@@ -71,6 +113,9 @@ public:
     }
 };
 
+static void swap( thread &t1, thread &t2 ) {
+    t1.swap(t2);
+}
 
 class mutex {
     pthread_mutex_t m_mtx;
@@ -91,7 +136,6 @@ public:
     void unlock() {
         pthread_mutex_unlock(&m_mtx);
     }
-    
 };
 
 
@@ -105,7 +149,6 @@ public:
     {
         m_mtx.lock();
     }
-    
     
     ~lock_guard() {
         m_mtx.unlock();

@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
-
+#include <cerrno>
 namespace ivy_mike {
 class thread {
     
@@ -44,7 +44,7 @@ public:
         // TODO: pthread error handling!
         int ret = pthread_create( &m_thread, 0, call<callable>, new callable(c) );
         
-        if( ret != EAGAIN ) {
+        if( ret == EAGAIN ) {
             throw std::runtime_error( "could not create thread: resource_unavailable_try_again" );
         } else if( ret != 0 ) {
             throw std::runtime_error( "could not create thread: internal error" );

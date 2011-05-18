@@ -1,7 +1,8 @@
 #include <iostream>
 #include <boost/multi_array.hpp>
 
-
+#ifndef __ivy_mike__write_png_h
+#define __ivy_mike__write_png_h
 namespace ivy_mike {
 
 template<typename ma_t>
@@ -36,3 +37,5 @@ static void write_png( const ma_t &ma, std::ostream &os ) {
 }
 
 }
+
+#endif

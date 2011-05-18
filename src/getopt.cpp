@@ -16,11 +16,48 @@
 #include <cstring>
 #include <algorithm>
 #include <typeinfo>
+#include <cctype>
+#include <algorithm>
 #include "ivymike/getopt.h"
+
+// OK, the parser is a bit overengineered for cmdline parsing. it's turned out to be some kind of backtracking recursive descent parser...
+// maybe I can use the bits for other parsers in the future...
 
 namespace ivy_mike {
 namespace getopt {
-ivy_mike::getopt::parser::token* parser::parse_argument(ivy_mike::getopt::parser::my_pinput& pi) {
+    
+template <typename pinput_t, int X = 0>
+class pisaver {
+    pinput_t m_pis;
+    pinput_t &m_pi_ref;
+    bool     m_commit;
+
+public:
+    pisaver( pinput_t &pi ) : m_pis(pi), m_pi_ref(pi), m_commit(false) {}
+    ~pisaver() {
+        if ( !m_commit ) {
+            if( false ) {
+                std::cout << "pis rollback " << X << " at " << (m_pi_ref.end() - m_pi_ref.begin());
+                
+                if ( m_pi_ref.has_next() ) {
+                    std::cout << " at char: " << m_pi_ref.peek() << "\n";
+                } else {
+                    std::cout << " at end\n";
+                }
+            }
+            
+            // do the rollback
+            m_pi_ref = m_pis;
+
+        }
+    }
+
+    void commit() {
+        m_commit = true;
+    }
+};
+    
+parser::auto_token parser::parse_argument(ivy_mike::getopt::parser::my_pinput& pi) {
     pisaver<my_pinput> pis(pi);
 
 
@@ -34,16 +71,17 @@ ivy_mike::getopt::parser::token* parser::parse_argument(ivy_mike::getopt::parser
         if ( std::isalnum(optid) ) {
             pi.next();
             pis.commit();
-            return new option( optid );
+            return auto_token(new option( optid ));
         }
 
     }
 
 
-    return 0;
+    return std::auto_ptr<token>();
 
 }
-parser::token* parser::parse_bare_string(parser::my_pinput& pi) {
+
+parser::auto_token parser::parse_bare_string(parser::my_pinput& pi) {
     pisaver<my_pinput,1> pis(pi);
 
     pi.skip_whitespace();
@@ -51,7 +89,7 @@ parser::token* parser::parse_bare_string(parser::my_pinput& pi) {
 
     if ( !pi.has_next()) {
 
-        return 0;
+        return auto_token();
     }
 
 
@@ -72,29 +110,29 @@ parser::token* parser::parse_bare_string(parser::my_pinput& pi) {
     }
 
     if ( str.empty() ) {
-        return 0;
+        return auto_token();
     }
 
 
-    string *s = new string( str );
+    auto_token s(new string( str ));
     pis.commit();
 
     return s;
 
 }
-parser::token* parser::parse_quoted_string(parser::my_pinput& pi) {
+parser::auto_token parser::parse_quoted_string(parser::my_pinput& pi) {
     pisaver<my_pinput,2> pis(pi);
 
     pi.skip_whitespace();
 
 
     if ( !pi.has_next()) {
-        return 0;
+        return auto_token();
     }
 
 
     if ( !pi.peek() == '"' ) {
-        return 0;
+        return auto_token();
     }
     pi.next();
 
@@ -114,58 +152,59 @@ parser::token* parser::parse_quoted_string(parser::my_pinput& pi) {
     }
 
     if ( str.empty() || !closed) {
-        return 0;
+        return auto_token();
     }
 
 
-    string *s = new string( str );
+    auto_token s(new string( str ));
     pis.commit();
 
     return s;
 
 }
-parser::token* parser::parse_string(parser::my_pinput& pi) {
-    // the two string parser do the pi state reconstruction
-    token *t = parse_bare_string(pi);
+parser::auto_token parser::parse_string(parser::my_pinput& pi) {
+    // the two string parsers do the pi state reconstruction
+    auto_token t(parse_bare_string(pi));
 
-    if ( t == 0 ) {
+    if ( t.get() == 0 ) {
         t = parse_quoted_string(pi);
     }
 
     return t;
 
 }
-parser::token* parser::parse(parser::my_pinput& pi) {
-    token *t;
-
+parser::auto_token parser::parse(parser::my_pinput& pi) {
     if ( !pi.has_next() ) {
-        return 0;
+        return auto_token();
     }
 
-    t = parse_argument( pi );
+    auto_token t = parse_argument( pi );
 
-    if ( t != 0 ) {
+    if ( t.get() != 0 ) {
         return t;
-//             m_tokenstream.push_back( t );
     }
 
     t = parse_string( pi );
 
-    if ( t != 0 ) {
+    if ( t.get() != 0 ) {
         return t;
-//             m_tokenstream.push_back( t );
     }
 
-    return 0;
+    return auto_token();
 
 }
 void parser::parse_main(parser::my_pinput& pi) {
-
-    token *t = 0;
-    while ( (t = parse(pi)) != 0 ) {
-        m_tokenstream.push_back( t );
-        std::cout << "add token: " << ptrdiff_t(t) << std::endl;
-        std::cout << "add token: " << t->to_string() << "\n";
+    
+    while ( true ) {
+        auto_token t = parse(pi);
+        
+        if( t.get() == 0 ) {
+            break;
+        }
+        
+//         std::cout << "add token: " << t->to_string() << "\n";
+        m_tokenstream.push_back( t.get() );
+        t.release();
     }
 
     if ( pi.has_next() ) {
@@ -183,7 +222,7 @@ void parser::parse(int argc, char** argv) {
 
 
         if ( std::count( argv[i], argv[i] + strlen(argv[i]), ' ' ) != 0 ) {
-            std::cout << "quoting\n";
+//             std::cout << "quoting\n";
             ss << "\"" << argv[i] << "\"";
         } else {
             ss << argv[i];
@@ -192,7 +231,7 @@ void parser::parse(int argc, char** argv) {
     }
     std::string s = ss.str();
 
-    std::cout << "cmdline: '" << s << "'\n" << std::endl;
+//     std::cout << "cmdline: '" << s << "'\n" << std::endl;
     my_pinput pi( s.begin(), s.end() );
 
     parse_main( pi );
@@ -200,16 +239,15 @@ void parser::parse(int argc, char** argv) {
     for ( std::list< token* >::iterator it = m_tokenstream.begin(); it != m_tokenstream.end(); ++it ) {
         token *t = *it;
 
-
         if ( typeid(*t) == typeid( option ) ) {
             option *opt = static_cast<option *>(t);
 
-            std::cout << "option\n";
+//             std::cout << "option\n";
 
             if ( m_options[opt->get_opt()] ) {
                 m_option_count[opt->get_opt()]++;
 
-                if ( m_opt_type[opt->get_opt()] ) {
+                if ( m_opt_has_argument[opt->get_opt()] ) {
                     ++it;
                     if ( it == m_tokenstream.end() ) {
                         std::cout << "missing option argument (end of input)\n";
@@ -224,7 +262,10 @@ void parser::parse(int argc, char** argv) {
                     }
 
                     m_opt_strings[opt->get_opt()] = static_cast<string*>(t)->get_string();
-
+                    
+                    if( m_opt_values[opt->get_opt()] != 0 ) {
+                        m_opt_values[opt->get_opt()]->set(m_opt_strings[opt->get_opt()]);
+                    }
                 }
             }
 
@@ -239,11 +280,25 @@ void parser::parse(int argc, char** argv) {
 void parser::add_opt(unsigned char c, bool argument) {
     m_options[c] = true;
     if ( argument ) {
-        m_opt_type[c] = true;
+        m_opt_has_argument[c] = true;
     }
 }
+
+void parser::add_opt_proxy( unsigned char c, std::auto_ptr<base_value> bv ) {
+    if( m_opt_values[c] != 0 ) {
+        std::stringstream ss;
+        ss << "there is already a value proxy registered for option " << c;
+        throw std::runtime_error( ss.str() );
+    }
+    m_options[c] = true;
+    m_opt_has_argument[c] = true;
+    m_opt_values[c] = bv.get(); // hmm, is vector::operator[] officially allowed to throw exceptions? using sequencial get+release should make this code exception safe anyway!?
+    bv.release();
+}
+
 parser::~parser() {
     std::for_each( m_tokenstream.begin(), m_tokenstream.end(), delete_object() );
+    std::for_each( m_opt_values.begin(), m_opt_values.end(), delete_object() );
 }
 
 } // namespace getopt

@@ -1,28 +1,29 @@
+/*
+ * Copyright (C) 2011 Simon A. Berger
+ *
+ *  This program is free software; you may redistribute it and/or modify its
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ */
+
+
 #ifndef __ivy_mike__thread_h
 #define __ivy_mike__thread_h
 
-// WARNING: this implementation is not very exception safe. use boost if you are interested in correctness...
+// WARNING: this thread implementations are not very exception safe. use boost if you are interested in correctness...
 
 #ifdef WIN32
-//#error ivy_mike threads not available on windows
-#define NOATOM
-#define NOGDI
-#define NOGDICAPMASKS
-#define NOMETAFILE
-#define NOMINMAX
-#define NOMSG
-#define NOOPENFILE
-#define NORASTEROPS
-#define NOSCROLL
-#define NOSOUND
-#define NOSYSMETRICS
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOCRYPT
-#define NOMCX
-#include <windows.h>
+// funny win32 api fact: you can deactivate everything and the thread implementation still works.
+// This clearly proves that threads are the only part of the win32 api which does not suck. What does the "32" stand for, btw.?
+#include "ivymike/disable_shit.h"
+
+#include <windows.h> // oh noes, the dreadful msdn advise from hell: "Header Winbase.h (include Windows.h)"
 
 
 namespace ivy_mike {

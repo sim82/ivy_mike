@@ -212,7 +212,7 @@ void parser::parse_main(parser::my_pinput& pi) {
     }
 
 }
-void parser::parse(int argc, char** argv) {
+bool parser::parse(int argc, char** argv) {
     std::stringstream ss;
 
     for ( int i = 1; i < argc; i++ ) {
@@ -248,33 +248,46 @@ void parser::parse(int argc, char** argv) {
                 m_option_count[opt->get_opt()]++;
 
                 if ( m_opt_has_argument[opt->get_opt()] ) {
-                    ++it;
-                    if ( it == m_tokenstream.end() ) {
-                        std::cout << "missing option argument (end of input)\n";
-                        break;
+                    //++it;
+                    
+                    std::list< token* >::iterator it_next = it;
+                    it_next++;
+                    if ( it_next != m_tokenstream.end() ) {
+                        it = it_next;
+                        t = *it;
+   
+                        if ( typeid( *t ) == typeid(string)) {
+                            m_opt_strings[opt->get_opt()] = static_cast<string*>(t)->get_string();
+                            //std::cout << "missing option argument\n";
+                            
+                        } else {
+                            m_opt_strings[opt->get_opt()] = std::string();
+                        }
                     }
-
-                    t = *it;
-
-                    if ( typeid( *t ) != typeid(string)) {
-                        std::cout << "missing option argument\n";
-                        break;
-                    }
-
-                    m_opt_strings[opt->get_opt()] = static_cast<string*>(t)->get_string();
+                    
                     
                     if( m_opt_values[opt->get_opt()] != 0 ) {
-                        m_opt_values[opt->get_opt()]->set(m_opt_strings[opt->get_opt()]);
+                        base_value &opt_value = *m_opt_values[opt->get_opt()];
+                        std::string &opt_string = m_opt_strings[opt->get_opt()];
+//                         std::cout << "opt: '" << opt_string << "' " << opt_value.allow_empty() << "\n";
+                       
+                       
+                        if( opt_string.empty() && !opt_value.allow_empty() ) {
+                            std::cout << "option " << opt->get_opt() << " requires an argument\n";
+                            return false;
+                        }
+                        
+                        opt_value.set(opt_string);
                     }
                 }
             }
 
         } else {
             std::cout << "unexpected token: " << typeid(*t).name() << " " << t->to_string() << "\n";
-            break;
+            return false;
         }
     }
-
+    return true;
 
 }
 void parser::add_opt(unsigned char c, bool argument) {

@@ -27,8 +27,9 @@
 #include <set>
 #include <list>
 #include <map>
-
+#include <algorithm>
 #include <memory>
+#include <functional>
 
 namespace ivy_mike {
 
@@ -44,6 +45,16 @@ template<>
 inline std::string literal_cast( const std::string &str ) {
     return str;
 }
+
+template<>
+inline bool literal_cast( const std::string &str ) {
+    std::string tmp = str;
+    
+    std::transform( tmp.begin(), tmp.end(), tmp.begin(), std::ptr_fun<int,int>(std::toupper) );
+    
+    return str != "FALSE" && str != "F";
+}
+
 
 
 template <typename T>
@@ -132,6 +143,7 @@ public:
     virtual ~base_value() {}
 
     virtual void set( const std::string &str ) = 0;
+    virtual bool allow_empty() = 0;
 };
 
 template<typename T>
@@ -139,9 +151,10 @@ class value : public base_value {
 //     literal_cast<T> lc;
 
     T & m_vref;
+    const bool m_allow_empty;
 public:
 //     value() : m_vref(0) {}
-    value( T &ref ) : m_vref(ref) {}
+    value( T &ref, bool allow_empty = false) : m_vref(ref), m_allow_empty(allow_empty) {}
 
     virtual ~value() {}
 
@@ -161,6 +174,8 @@ public:
         m_vref = dv;
         return *this;
     }
+    
+   virtual bool allow_empty() { return m_allow_empty; }
 };
 
 
@@ -262,7 +277,7 @@ public:
     void parse_main( my_pinput &pi ) ;
 
 
-    void parse( int argc, char **argv ) ;
+    bool parse( int argc, char **argv ) ;
 
     const std::string &get_string( char opt ) {
         return m_opt_strings[opt];

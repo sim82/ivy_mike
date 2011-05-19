@@ -19,6 +19,10 @@
 namespace ivy_mike {
 template<typename T>
 class odmatrix {
+public:
+    typedef T value_type;
+    typedef T* iterator;
+private:
     T* m_base;
     size_t m_size;
 
@@ -34,10 +38,10 @@ public:
         return m_base[a];
     }
     
-    T* begin() {
+    iterator begin() {
         return m_base;
     }
-    T* end() {
+    iterator end() {
         return m_base + m_size;
     }
     
@@ -49,6 +53,13 @@ public:
 
 template<typename T>
 class tdmatrix {
+public:
+    typedef odmatrix<T> row_type;
+    typedef T value_type;
+    
+    typedef T* iterator;
+private:
+    
     T* m_base;
     const size_t m_asize;
     const size_t m_bsize;
@@ -100,12 +111,12 @@ public:
         return m_asize * b;
     }
     
-    odmatrix<T> operator[](ptrdiff_t b) {
-        return odmatrix<T>(m_base + (b * m_asize), m_asize );
+    row_type operator[](ptrdiff_t b) {
+        return row_type(m_base + (b * m_asize), m_asize );
     }
     
     const odmatrix<T> operator[](ptrdiff_t b) const {
-        return odmatrix<T>(m_base + (b * m_asize), m_asize );
+        return row_type(m_base + (b * m_asize), m_asize );
     }
     
     row_iterator row_begin() {
@@ -116,10 +127,11 @@ public:
         return row_iterator(m_base + num_elements(), m_asize);
     }
     
-    T* begin() {
+    // WARNING: the default iterators work on single elements, not rows! This is inconsistend with operator[]
+    iterator begin() {
         return m_base;
     }
-    T* end() {
+    iterator end() {
         return m_base + num_elements();
     }
     

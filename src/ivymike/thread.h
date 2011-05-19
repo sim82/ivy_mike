@@ -4,8 +4,130 @@
 // WARNING: this implementation is not very exception safe. use boost if you are interested in correctness...
 
 #ifdef WIN32
-#error ivy_mike threads not available on windows
-#endif
+//#error ivy_mike threads not available on windows
+#define NOATOM
+#define NOGDI
+#define NOGDICAPMASKS
+#define NOMETAFILE
+#define NOMINMAX
+#define NOMSG
+#define NOOPENFILE
+#define NORASTEROPS
+#define NOSCROLL
+#define NOSOUND
+#define NOSYSMETRICS
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOCRYPT
+#define NOMCX
+#include <windows.h>
+
+
+namespace ivy_mike {
+// TODO: the windows implementation is completely untested, but seems to work for pw_dist
+
+class thread {
+public:
+	typedef HANDLE native_handle_type;
+
+
+private:
+	HANDLE m_thread;
+
+	thread( const thread &other );
+	const thread& operator=(const thread &other );
+
+	template<typename callable>
+    static DWORD call( void *f ) {
+        std::auto_ptr<callable> c(static_cast<callable *>(f));
+        (*c)();
+       
+        return 0;
+    }
+    
+public:
+
+	thread() : m_thread(NULL) {}
+
+	template<typename callable>
+    thread( const callable &c ) {
+		m_thread = CreateThread( 
+            NULL,                   // default security attributes
+            0,                      // use default stack size  
+            call<callable>,       // thread function name
+            new callable(c),          // argument to thread function 
+            0,                      // use default creation flags 
+            NULL);   // returns the thread identifier 
+
+        if( m_thread == NULL) {
+            throw std::runtime_error( "could not create thread: don't know why." );
+        } 
+    }
+    
+    ~thread() {
+        // this (=nothing) is actually the right thing to do (TM) if I read 30.3.1.3 if the iso c++0x standard corrctly
+        if( joinable() ) {
+            std::cerr << "ivy_mike::thread warning: destructor of joinable thread called. possible ressource leak\n";
+        }
+    }
+    
+    void swap( thread &other ) {
+        std::swap( m_thread, other.m_thread );
+        //std::swap( m_valid_thread, other.m_valid_thread );
+    }
+    
+    bool joinable() {
+        return m_thread != NULL;
+    }
+    
+    void join() {
+        
+        if( joinable() ) {
+            void *rv;
+			WaitForSingleObject( m_thread, INFINITE );
+
+            m_thread = NULL;
+        }
+    }
+    
+    native_handle_type native_handle() {
+        if( !joinable() ) {
+            throw std::runtime_error( "native_handle: thread not joinable" );
+        }
+        return m_thread;
+    }
+};
+
+
+
+class mutex {
+    CRITICAL_SECTION m_cs;
+
+public:
+    
+    mutex() {
+		InitializeCriticalSection( &m_cs );
+    }
+    ~mutex() {
+		DeleteCriticalSection( &m_cs );
+    }
+    
+    inline void lock() {
+		EnterCriticalSection( &m_cs );
+    }
+    
+    inline void unlock() {
+		LeaveCriticalSection( &m_cs );
+    }
+};
+
+
+
+}
+
+#else
 
 #include <pthread.h>
 #include <vector>
@@ -40,8 +162,8 @@ public:
     
     template<typename callable>
     thread( const callable &c ) {
-        // UUHM, this code looks a bit clumsy, but I could not figure out anything better without cheating (=looking at the boost::thread code)
-        // TODO: pthread error handling!
+        // dynamically allocating a copy of callable seems to be the only way to get the object into the 
+		// thread start function without specializing the whole thread object...
         int ret = pthread_create( &m_thread, 0, call<callable>, new callable(c) );
         
         if( ret == EAGAIN ) {
@@ -86,6 +208,35 @@ public:
     }
 };
 
+
+
+class mutex {
+    pthread_mutex_t m_mtx;
+
+public:
+    
+    mutex() {
+        pthread_mutex_init( &m_mtx, 0);
+    }
+    ~mutex() {
+        pthread_mutex_destroy(&m_mtx);
+    }
+    
+    inline void lock() {
+        pthread_mutex_lock(&m_mtx);
+    }
+    
+    inline void unlock() {
+        pthread_mutex_unlock(&m_mtx);
+    }
+};
+
+
+
+}
+#endif
+
+namespace ivy_mike {
 class thread_group {
     std::vector<ivy_mike::thread *> m_threads;
     
@@ -117,27 +268,6 @@ static void swap( thread &t1, thread &t2 ) {
     t1.swap(t2);
 }
 
-class mutex {
-    pthread_mutex_t m_mtx;
-
-public:
-    
-    mutex() {
-        pthread_mutex_init( &m_mtx, 0);
-    }
-    ~mutex() {
-        pthread_mutex_destroy(&m_mtx);
-    }
-    
-    void lock() {
-        pthread_mutex_lock(&m_mtx);
-    }
-    
-    void unlock() {
-        pthread_mutex_unlock(&m_mtx);
-    }
-};
-
 
 template <typename mtx_t>
 class lock_guard {
@@ -155,6 +285,4 @@ public:
     }
 };
 }
-
-
 #endif

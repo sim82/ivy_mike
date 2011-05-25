@@ -43,7 +43,19 @@ private:
 	template<typename callable>
     static DWORD call( void *f ) {
         std::auto_ptr<callable> c(static_cast<callable *>(f));
-        (*c)();
+        try {
+            (*c)();
+        } catch( std::runtime_error x ) {
+            std::cerr << "uncaught std::runtime_error in ivy_mike::thread:\n" << x.what() << std::endl;
+//             std::cerr << x.what() << std::endl;
+            
+            throw;
+        } catch( std::exception x ) {
+            std::cerr << "uncaught std::exception in ivy_mike::thread:\n" << x.what() << std::endl;
+//             std::cerr << x.what() << std::endl;
+            
+            throw;
+        }
        
         return 0;
     }
@@ -150,7 +162,20 @@ private:
     template<typename callable>
     static void *call( void *f ) {
         std::auto_ptr<callable> c(static_cast<callable *>(f));
-        (*c)();
+        
+         try {
+            (*c)();
+        } catch( std::runtime_error x ) {
+            std::cerr << "uncaught std::runtime_error in ivy_mike::thread: " << x.what() << std::endl;
+//             std::cerr << x.what() << std::endl;
+            
+            throw;
+        } catch( std::exception x ) {
+            std::cerr << "uncaught std::exception in ivy_mike::thread" << std::endl;
+//             std::cerr << x.what() << std::endl;
+            
+            throw;
+        }
        
         return 0;
     }

@@ -16,7 +16,7 @@
 #ifndef __ivy_mike__thread_h
 #define __ivy_mike__thread_h
 
-// WARNING: this thread implementations are not very exception safe. use boost if you are interested in correctness...
+// WARNING: these thread implementations are not very exception safe. use boost if you are interested in correctness...
 
 #ifdef WIN32
 // funny win32 api fact: you can deactivate everything and the thread implementation still works.
@@ -24,6 +24,10 @@
 #include "ivymike/disable_shit.h"
 
 #include <windows.h> // oh noes, the dreadful msdn advise from hell: "Header Winbase.h (include Windows.h)"
+// And I heard a voice in the midst of the four beasts,
+// And I looked and behold: a pale horse.
+// And his name, that sat on him, was Windows.h.
+// And Instant Namespace Pollution followed with him.
 
 
 namespace ivy_mike {
@@ -98,7 +102,7 @@ public:
     void join() {
         
         if( joinable() ) {
-            void *rv;
+
 			WaitForSingleObject( m_thread, INFINITE );
 
             m_thread = NULL;

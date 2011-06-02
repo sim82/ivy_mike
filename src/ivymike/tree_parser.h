@@ -884,7 +884,7 @@ private:
 		}
 		
         is.seekg( 0, std::ios_base::end );
-        off_t size = is.tellg();
+		std::ifstream::off_type size = is.tellg();
         is.seekg( 0, std::ios_base::beg );
 
         data.resize( size );
@@ -1185,10 +1185,10 @@ private:
 
                 bool isDigit = true;
                 for ( size_t i = 0; i < nodeLabel.size(); i++ ) {
-                    isDigit &= std::isdigit(nodeLabel.at(i));
+                    isDigit = isDigit && std::isdigit(nodeLabel.at(i));
 
                     if ( i == 0 ) {
-                        isDigit &= (nodeLabel.at(i) != '0');
+                        isDigit = isDigit && (nodeLabel.at(i) != '0');
                     }
                 }
 

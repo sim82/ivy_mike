@@ -131,7 +131,7 @@ parser::auto_token parser::parse_quoted_string(parser::my_pinput& pi) {
     }
 
 
-    if ( !pi.peek() == '"' ) {
+    if ( pi.peek() != '"' ) {
         return auto_token();
     }
     pi.next();
@@ -215,7 +215,7 @@ void parser::parse_main(parser::my_pinput& pi) {
 bool parser::parse(int argc, char** argv) {
     std::stringstream ss;
 
-    for ( int i = 1; i < argc; i++ ) {
+    for ( size_t i = 1; i < size_t(argc); i++ ) {
         if ( i > 1 ) {
             ss << " ";
         }

@@ -52,6 +52,8 @@ inline bool literal_cast( const std::string &str ) {
     
     std::transform( tmp.begin(), tmp.end(), tmp.begin(), std::ptr_fun<int,int>(std::toupper) );
     
+    //std::cerr << "literal_cast<bool>: '" << str << "'\n";
+    
     return str != "FALSE" && str != "F";
 }
 
@@ -164,7 +166,7 @@ public:
 //         }
 
         m_vref = literal_cast<T>(str);
-
+//         std::cerr << "set: " << m_vref << "\n";
     }
 
     const value<T> &set_default( const T &dv ) {

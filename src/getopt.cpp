@@ -253,11 +253,12 @@ bool parser::parse(int argc, char** argv) {
                     std::list< token* >::iterator it_next = it;
                     it_next++;
                     if ( it_next != m_tokenstream.end() ) {
-                        it = it_next;
-                        t = *it;
+                        
+                        t = *it_next;
    
                         if ( typeid( *t ) == typeid(string)) {
                             m_opt_strings[opt->get_opt()] = static_cast<string*>(t)->get_string();
+                            it = it_next;
                             //std::cout << "missing option argument\n";
                             
                         } else {

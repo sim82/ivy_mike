@@ -290,7 +290,7 @@ public:
     }
 };
 
-static void swap( thread &t1, thread &t2 ) {
+inline void swap( thread &t1, thread &t2 ) {
     t1.swap(t2);
 }
 

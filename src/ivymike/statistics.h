@@ -108,9 +108,9 @@ float covariance( std::vector<float> &v1, std::vector<float> &v2) {
     assert( v1.size() == v2.size() );
     
     float cov = 0;
-    float var1 = 0;
-    float var2 = 0;
-    for( int i = 0; i < v1.size(); i++ ) {
+//     float var1 = 0;
+//     float var2 = 0;
+    for( size_t i = 0; i < v1.size(); i++ ) {
         const float d1 = (v1[i] - m1);
         const float d2 = (v2[i] - m2);
         cov += d1 * d2;
@@ -121,7 +121,7 @@ float std_dev( std::vector<float> &v ) {
     float m = mean(v);
     
     float var = 0;
-    for( int i = 0; i < v.size(); i++ ) {
+    for( size_t i = 0; i < v.size(); i++ ) {
         const float d = (v[i] - m);
         var += d * d;
     }

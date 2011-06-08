@@ -8,11 +8,12 @@
 #include "ivymike/disable_shit.h"
 
 #include <windows.h>
+static bool g_pc_valid = false;
+static LARGE_INTEGER g_pc_freq;
 #endif
 #include "ivymike/time.h"
 
-static bool g_pc_valid = false;
-static LARGE_INTEGER g_pc_freq;
+
 double ivy_mike::gettime(void )
 {
 #ifdef WIN32

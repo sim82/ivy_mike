@@ -22,6 +22,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <cstdlib>
 #include <stdint.h>
@@ -127,9 +128,16 @@ struct molecule {
         
         return int(m_atoms.size());
     }
-    
+    inline bool operator<( const molecule &other ) {
+        return size() < other.size();
+    }
     //std::map<std::string,std::string> m_extra;
-    
+    molecule &swap( molecule &other ) {
+        m_header.swap( other.m_header );
+        m_comment.swap( other.m_comment );
+        m_atoms.swap( other.m_atoms );
+        m_bonds.swap( other.m_bonds );
+    }
 };
     
     
@@ -197,7 +205,9 @@ struct atom {
         std::copy( ele, ele + ele_t::size(), r.begin() );
         return r;
     }
-    
+    void print_mdl( std::ostream &os ) const {
+        os << "    0.0000    0.0000    0.0000" <<  m_ele[0] << m_ele[1] << m_ele[2] << "  0  0  0  0  0  0  0  0  0  0  0  0\n";
+    }
 };
 struct bond {
     std::pair <uint8_t,uint8_t>     m_atoms;
@@ -214,12 +224,14 @@ struct bond {
         }
     //    printf( "bond: %d %d %d\n", m_atoms.first, m_atoms.second, m_type );
     }
-    
+    void print_mdl( std::ostream &os ) const {
+        os << std::setw(3) << int(m_atoms.first) << std::setw(3) << int(m_atoms.second) << std::setw(3) << int(m_type) << "  0  0  0  0\n";
+    }
 };
 
 struct molecule {
     std::string     m_header;
-    
+    std::string     m_comment; // keep the comment field, but do not fill it
     std::vector<atom> m_atoms;
     std::vector<bond> m_bonds;
     
@@ -247,8 +259,17 @@ struct molecule {
         
         return int(m_atoms.size());
     }
-    
+    inline bool operator<( const molecule &other ) {
+        return size() < other.size();
+    }
     //std::map<std::string,std::string> m_extra;
+    
+    molecule &swap( molecule &other ) {
+        m_header.swap( other.m_header );
+        m_comment.swap( other.m_comment );
+        m_atoms.swap( other.m_atoms );
+        m_bonds.swap( other.m_bonds );
+    }
     
 };   
     
@@ -526,22 +547,23 @@ public:
 
     static void write_mdl( const molecule &mol, std::ostream &os ) {
         os << mol.m_header << "\n";
-           
-        //os << " " << mol.m_comment << "\n";
-        os << mol.m_atoms.size() << " " << mol.m_bonds.size() << "\n";
+        //os << "\n\n";
+        os << " " << mol.m_comment << "\n\n";
+        os << std::setw(3) << mol.m_atoms.size() << std::setw(3) << mol.m_bonds.size() << "  0  0  0  0  0  0  0  0  1 V2000\n";
         
         
         for( typename std::vector<atom>::const_iterator it = mol.m_atoms.begin(); it != mol.m_atoms.end(); ++it ) {
          
-            os << it->m_ele[1] << it->m_ele[2] << "\n";
-            
+            //os << it->m_ele[1] << it->m_ele[2] << "\n";
+            it->print_mdl( os );
         }
         
         for( typename std::vector<bond>::const_iterator it = mol.m_bonds.begin(); it != mol.m_bonds.end(); ++it ) {
          
-            os << "bond: " << int(it->m_atoms.first) << " " << int(it->m_atoms.second) << " " << int(it->m_type) << "\n";
+            //os << "bond: " << int(it->m_atoms.first) << " " << int(it->m_atoms.second) << " " << int(it->m_type) << "\n";
+            it->print_mdl( os );
         }
-        
+        os << "M  END\n$$$$\n";
         
     }
     
@@ -609,6 +631,11 @@ public:
     };
 };
 
+
+// template<typename sdf_int_>
+// inline bool operator<(const typename sdf_int_::molecule &m1, const typename sdf_int_::molecule &m2 ) {
+//     return m1.size() < m2.size();
+// }
 
 typedef sdf_impl<sdf_int_full> sdf_full;
 typedef sdf_impl<sdf_int_eco> sdf_eco;

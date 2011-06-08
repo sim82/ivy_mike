@@ -39,6 +39,6 @@
 #define NOMCX 
 #define WIN32_LEAN_AND_MEAN
 
-// sadly these two don't seem work
+// sadly these two don't seem to work
 #define NOOFFENSIVEUPPERCASETYPENAMES
 #define NOsTUPIDcAMELcASE

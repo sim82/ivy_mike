@@ -107,24 +107,22 @@ public:
         return m_asize * m_bsize;
     }
     
-    ptrdiff_t b_offset( ptrdiff_t b ) {
-        return m_asize * b;
+
+    
+    row_type operator[](ptrdiff_t a) {
+        return row_type(m_base + (a * m_bsize), m_bsize );
     }
     
-    row_type operator[](ptrdiff_t b) {
-        return row_type(m_base + (b * m_asize), m_asize );
-    }
-    
-    const odmatrix<T> operator[](ptrdiff_t b) const {
-        return row_type(m_base + (b * m_asize), m_asize );
+    const odmatrix<T> operator[](ptrdiff_t a) const {
+        return row_type(m_base + (a * m_bsize), m_bsize );
     }
     
     row_iterator row_begin() {
-        return row_iterator(m_base, m_asize);
+        return row_iterator(m_base, m_bsize);
     }
     
     row_iterator row_end() {
-        return row_iterator(m_base + num_elements(), m_asize);
+        return row_iterator(m_base + num_elements(), m_bsize);
     }
     
     // WARNING: the default iterators work on single elements, not rows! This is inconsistend with operator[]
@@ -136,7 +134,7 @@ public:
     }
     
     size_t size() const {
-        return m_bsize;
+        return m_asize;
     }
     
 };

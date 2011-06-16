@@ -770,11 +770,14 @@ class ln_pool
  
     lt m_list;
 
-    sptr::shared_ptr<node_data_factory> m_ad_fact;
-    
+    //sptr::shared_ptr<node_data_factory> m_ad_fact;
+    std::auto_ptr<node_data_factory> m_ad_fact;
 public:
     
-    ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
+    // this version takes ownership of fact!
+    ln_pool( node_data_factory *fact ) : m_ad_fact(fact) {}
+    
+    //ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}
     
     

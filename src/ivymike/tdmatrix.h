@@ -61,8 +61,8 @@ public:
 private:
     
     T* m_base;
-    const size_t m_asize;
-    const size_t m_bsize;
+    size_t m_asize;
+    size_t m_bsize;
     
     bool m_own;
 
@@ -92,6 +92,9 @@ public:
         
     };
 
+    
+    tdmatrix() : m_base(0), m_asize(0), m_bsize(0), m_own(false) {}
+    
     tdmatrix( size_t asize, size_t bsize ) : m_asize(asize), m_bsize(bsize) {
         m_base = new T[num_elements()];
         m_own = true;
@@ -99,9 +102,22 @@ public:
         
     }
     
+    
+    
     ~tdmatrix() {
-        delete[] m_base;
+        if( m_own ) {
+            delete[] m_base;
+        }
     }
+    
+    void init_size( size_t asize, size_t bsize ) {
+        // uuhm, is this the thing to do (TM) in the name of exception safety?
+        
+        tdmatrix<T> n(asize, bsize);
+        
+        std::swap( *this, n );
+    }
+    
     
     size_t num_elements() {
         return m_asize * m_bsize;

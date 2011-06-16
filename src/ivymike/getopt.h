@@ -184,6 +184,32 @@ public:
 
 
 class parser {
+    class parser_input {
+        int m_argc;
+        char **m_argv;
+        int m_ptr;
+    public:
+        parser_input( int argc, char **argv ) : m_argc(argc), m_argv(argv), m_ptr(1) {}
+        
+        
+        bool past_end() {
+            return m_ptr >= m_argc;
+        }
+        
+        void next() {
+            m_ptr++;
+        }
+        
+        char *peek() {
+            if( m_ptr >= m_argc ) {
+                throw std::runtime_error( "peek: out of bounds." );
+            }
+            
+            return m_argv[m_ptr];
+        }
+        
+    };
+    
     typedef pinput<std::string::iterator> my_pinput;
 
     std::vector<bool> m_options;
@@ -271,14 +297,19 @@ public:
     }
 
 
-    auto_token parse_argument( my_pinput &pi ) ;
-    auto_token parse_bare_string( my_pinput &pi ) ;
-    auto_token parse_quoted_string( my_pinput &pi ) ;
-    auto_token parse_string( my_pinput &pi ) ;
-    auto_token parse( my_pinput &pi ) ;
-    void parse_main( my_pinput &pi ) ;
+//     auto_token parse_argument( my_pinput &pi ) ;
+//     auto_token parse_bare_string( my_pinput &pi ) ;
+//     auto_token parse_quoted_string( my_pinput &pi ) ;
+//     auto_token parse_string( my_pinput &pi ) ;
+//     auto_token parse( my_pinput &pi ) ;
+//     void parse_main( my_pinput &pi ) ;
 
 
+    
+    bool parse_new( int argc, char **argv );
+    void parse_option( parser_input &pi );
+    
+    
     bool parse( int argc, char **argv ) ;
 
     const std::string &get_string( char opt ) {

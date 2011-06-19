@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <cctype>
+#include "demangle.h"
 
 #if WIN32
 #include <boost/shared_ptr.hpp>
@@ -689,6 +690,15 @@ struct adata {
             os << "(INNER:" << m_serial << ")";
         }    
     }
+    
+    template<typename T>
+    T* get_as() {
+        if( !ivy_mike::isa<T>(*this) ) {
+            throw std::runtime_error( "dynamic cast failed\n" );
+        }
+        
+        return static_cast<T*>(this);
+    }
 
 };
     
@@ -780,7 +790,10 @@ public:
     //ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}
     
-    
+    ~ln_pool() {
+        clear();
+        sweep();
+    }
     node_data_factory &get_adata_factory() {
         return *m_ad_fact;
     }
@@ -1090,36 +1103,7 @@ private:
 
 
 
-    /**
-     * create an edge (=double link) between the two nodes and set branch length
-     *
-     * @param n1
-     * @param n2
-     * @param branchLen
-     */
-    static void twiddle( lnode *n1, lnode *n2, double branchLen, std::string branchLabel, double support ) {
-        if ( n1->back != 0 ) {
-            printf( "n1.back != null" );
-            throw std::exception();
-        }
-
-        if ( n2->back != 0 ) {
-            printf( "n2.back != null" );
-            throw std::exception();
-        }
-
-        n1->back = n2;
-        n2->back = n1;
-
-        n1->backLen = branchLen;
-        n2->backLen = branchLen;
-        n1->backLabel = branchLabel;
-        n2->backLabel = branchLabel;
-        n1->backSupport = support;
-        n2->backSupport = support;
-
-    }
-
+   
     lnode *parseInnerNode() {
 //         printf( "parseInnerNode\n" );
         skipWhitespace();
@@ -1265,6 +1249,38 @@ private:
 
 
 public:
+     /**
+     * create an edge (=double link) between the two nodes and set branch length
+     *
+     * @param n1
+     * @param n2
+     * @param branchLen
+     */
+    static void twiddle( lnode *n1, lnode *n2, double branchLen, std::string branchLabel, double support ) {
+        if ( n1->back != 0 ) {
+            printf( "n1.back != null" );
+            throw std::exception();
+        }
+
+        if ( n2->back != 0 ) {
+            printf( "n2.back != null" );
+            throw std::exception();
+        }
+
+        n1->back = n2;
+        n2->back = n1;
+
+        n1->backLen = branchLen;
+        n2->backLen = branchLen;
+        n1->backLabel = branchLabel;
+        n2->backLabel = branchLabel;
+        n1->backSupport = support;
+        n2->backSupport = support;
+
+    }
+
+    
+    
     parser(const char *f, ln_pool &pool ) : m_pool(pool) {
         QUIET = false;
         readFile(f, inputA);

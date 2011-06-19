@@ -18,7 +18,7 @@ inline bool isa( T2 * ptr ) {
 }
 
 
-// TODO: is this a good idea? the pointer version above should win in appropriate
+// TODO: is this a good idea? the pointer version above should win if appropriate
 template<typename T1, typename T2>
 inline bool isa( T2 & ref ) {
     return typeid(ref) == typeid(T1);

@@ -1326,6 +1326,54 @@ public:
 
 };
 
+static void print_newick( lnode *node, std::ostream &os, bool root = true ) {
+    if( node->m_data->isTip ) {
+        os << node->m_data->tipName << ":" << node->backLen;
+        if( !node->backLabel.empty() ) {
+            os << "[" << node->backLabel << "]";
+        }
+    } else {
+        os << "(";
+        print_newick(node->next->back, os, false);
+        os << ",";
+        print_newick(node->next->next->back, os, false);
+        if( root ) {
+            os << ",";
+            print_newick(node->back, os, false);
+            os << ");";
+        } else {
+            os << "):" << node->backLen;
+            
+            if( !node->backLabel.empty() ) {
+                os << "[" << node->backLabel << "]";
+            }
+        }
+    }
+}
+
+static lnode *towards_tree( lnode *node ) {
+    if( !node->m_data->isTip || node->back != 0 ) {
+        return node;
+    } else if( node->next->back != 0 ) {
+        return node->next;
+    } else if( node->next->next->back != 0 ) {
+        return node->next->next;
+    } else {
+        throw std::runtime_error( "cannot find valid back pointer." );
+    }
+}
+
+static lnode *next_non_tip( lnode *node ) {
+    if( !node->m_data->isTip ) {
+        return node;
+    } else {
+        if( node->back->m_data->isTip ) {
+            throw std::runtime_error( "cannot find non-tip node: two connected tips." );
+        }
+        return node->back;
+    }
+}
+
 
 } // namespace tree_parser_ms
 

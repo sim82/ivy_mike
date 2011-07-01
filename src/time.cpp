@@ -24,7 +24,7 @@ static bool g_pc_valid = false;
 static LARGE_INTEGER g_pc_freq;
 #endif
 #include "ivymike/time.h"
-
+#include "ivymike/cycle.h"
 
 
 double ivy_mike::gettime(void )
@@ -46,4 +46,9 @@ double ivy_mike::gettime(void )
  gettimeofday(&ttime , 0);
  return ttime.tv_sec + ttime.tv_usec * 0.000001;
 #endif
+}
+
+
+double ivy_mike::perf_timer::my_getticks() {
+    return getticks();
 }

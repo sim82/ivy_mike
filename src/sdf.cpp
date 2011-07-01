@@ -17,13 +17,22 @@
 #include "ivymike/sdf.h"
 #include <cassert>
 using namespace ivy_mike;
+// sadsafdasf
+// int main( int argc, char* argv[]) {
+//     const char *filename = argv[1];
+//     assert( filename != 0 );
+//     std::ifstream is( filename );
+//     
+//     
+//     ivy_mike::sdf_full s(is);
+//     
+// }
 
-int main( int argc, char* argv[]) {
-    const char *filename = argv[1];
-    assert( filename != 0 );
-    std::ifstream is( filename );
-    
-    
-    ivy_mike::sdf_full s(is);
-    
+namespace ivy_mike {
+template class sdf_impl<sdf_int_full>;
+template class sdf_impl<sdf_int_eco>;
 }
+// #include "ivymike/sdf2.h"
+// 
+// template class ivy_mike_2::sdf_impl<ivy_mike_2::sdf_int_full>;
+// template class ivy_mike_2::sdf_impl<ivy_mike_2::sdf_int_eco>;

@@ -12,7 +12,7 @@ PROJECT(ivymike)
 #SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
 
 #ADD_LIBRARY(ivymike src/main.cpp src/LargePhylip.cpp src/time.cpp )
-ADD_LIBRARY(ivymike src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp )
+ADD_LIBRARY(ivymike src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp )
 
 
 INSTALL(TARGETS ivymike
@@ -21,7 +21,7 @@ INSTALL(TARGETS ivymike
 )
 
 ADD_EXECUTABLE( treeparser_test src/tree_parser.cpp src/tree_parser_test.cpp )
-ADD_EXECUTABLE( sdf_test src/sdf.cpp )
+# ADD_EXECUTABLE( sdf_test src/sdf.cpp )
 
 
 INSTALL(FILES ivymike/LargePhylip.h

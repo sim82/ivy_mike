@@ -20,11 +20,14 @@
 
 using std::cout;
 
-using namespace ivy_mike;
 
-int tree_parser_ms::adata::s_serial = 0;
 
-tree_parser_ms::lnode *tree_parser_ms::lnode::create( ln_pool &pool ) {
+namespace ivy_mike {
+namespace tree_parser_ms {
+
+int adata::s_serial = 0;
+
+lnode *lnode::create( ln_pool &pool ) {
     
     lnode *n = pool.alloc();
     n->next = pool.alloc();
@@ -48,6 +51,467 @@ tree_parser_ms::lnode *tree_parser_ms::lnode::create( ln_pool &pool ) {
 //     return n;
 
 }
+
+
+void ln_pool::sweep() {
+
+    size_t size1 = m_list.size();
+
+    for ( lt::iterator it = m_list.begin(); it != m_list.end(); ) {
+        lt::iterator next = it;
+        next++;
+        if ( !it->mark ) {
+            //lnode *ln = &(*it);
+            // TODO: review: is this safe? shouldn't be able to hit any dead lnode (if they unlink themselves properly and the tree is consistent)
+            if ( it->back != 0 ) {
+                it->back->back = 0;
+            }
+
+            m_list.erase(it);
+            //delete ln;
+            it->dealloc();
+        }
+
+        it = next;
+    }
+
+    size_t size2 = m_list.size();
+
+    printf( "sweep: %zd -> %zd\n", size1, size2 );
+}
+void ln_pool::clear() {
+    for ( lt::iterator it = m_list.begin(); it != m_list.end(); ++it ) {
+        it->mark = false;
+    }
+}
+
+
+
+void ln_pool::mark(lnode* n) {
+
+    n->mark = true;
+    n->next->mark = true;
+    n->next->next->mark = true;
+
+    if ( n->back != 0 ) {
+        if ( !n->back->mark ) {
+            mark( n->back );
+        }
+    }
+
+    if ( n->next->back != 0 ) {
+        if ( !n->next->back->mark ) {
+            mark( n->next->back );
+        }
+    }
+
+    if ( n->next->next->back != 0 ) {
+        if ( !n->next->next->back->mark ) {
+            mark( n->next->next->back );
+        }
+    }
+
+}
+
+void parser::readFile(const char* f, std::vector< char >& data) {
+
+    std::ifstream is(f);
+    if ( !is.good() ) {
+        throw std::runtime_error( "cannot open newick file" );
+    }
+
+    is.seekg( 0, std::ios_base::end );
+    std::ifstream::off_type size = is.tellg();
+    is.seekg( 0, std::ios_base::beg );
+
+    data.resize( size );
+
+    is.read( data.data(), size );
+
+}
+
+void parser::substring(const parser::idi_t& from, const parser::idi_t& to, std::string& out) {
+//         return new String( Arrays.copyOfRange( inputA, from, to));
+
+    out.clear();
+
+    out.append(from, to );
+}
+
+void parser::printLocation() {
+    if ( QUIET ) {
+        return;
+    }
+
+    idi_t pos1 = std::max(inputA.begin(), ptr - 40);
+    idi_t pos2 = std::min(inputA.end(), ptr + 40);
+
+
+
+    printf( "%s\n", substring(pos1, pos2).c_str());
+
+    for (idi_t i = pos1; i < ptr; ++i) {
+        printf(" ");
+    }
+    printf("^\n");
+}
+void parser::skipWhitespace() {
+    while ( ptr != inputA.end() && std::isspace(*ptr) ) {
+        ++ptr;
+    }
+    if ( ptr == inputA.end() ) {
+
+        printLocation();
+        printf( "hit end of input while skipping white-spaces\n" );
+        throw std::exception();
+    }
+
+}
+std::string parser::parseBranchLabel() {
+    if ( *ptr == '[' ) {
+        idi_t lstart = ptr;
+        ++ptr;
+
+
+        idi_t lend = findNext(ptr, ']' );
+
+        ptr = lend+1;
+
+        // labels have the form [blablabla], so the label content starts at lstart + 1
+
+        if ( lend - (lstart+1) <= 0 ) {
+            printLocation();
+
+            std::stringstream ss;
+            ss << "bad branch label: " << substring(lstart, ptr);
+            throw ss.str();
+        }
+
+        return substring(lstart + 1, lend);
+
+
+    } else {
+        return std::string();
+    }
+
+
+}
+lnode* parser::parseNode() {
+//         printf( "parseNode\n" );
+    skipWhitespace();
+
+    // lookahead: determine node type
+    if ( *ptr == '(') {
+        return parseInnerNode();
+    } else {
+        return parseLeaf();
+    }
+}
+parser::idi_t parser::findNext(parser::idi_t pos, char c) {
+
+
+    while ( pos < inputA.end() && *pos != c) {
+        ++pos;
+    }
+
+    if ( pos >= inputA.end() ) {
+        throw "reached end of input in find next";
+
+    }
+    return pos;
+}
+bool parser::isFloatChar(char c) {
+    return std::isdigit(c) || c == '.' || c == 'e' || c == 'E' || c == '-';
+}
+
+std::string parser::substring(const parser::idi_t from, const parser::idi_t to) {
+//         return new String( Arrays.copyOfRange( inputA, from, to));
+
+
+
+    return std::string(from, to );
+}
+lnode* parser::parseLeaf() {
+//         printf( "parseLeaf\n" );
+
+    skipWhitespace();
+
+    // a leaf consists just of a data string. use the ':' as terminator for now (this is not correct, as there doesn't have to be a branch length (parsr will crash on tree with only one leaf...));
+    //int end = findNext(ptr, ':');
+    idi_t end = findEndOfBranch(ptr);
+    std::string ld = substring(ptr, end);
+
+    ptr = end;
+
+
+    //      System.out.printf("leaf: %s\n", ld);
+    lnode *n = lnode::create( m_pool );
+    n->m_data->setTipName(ld);
+    n->m_data->setTipSerial(nLeafs);
+    //n.data = ld;
+    n->m_data->isTip = true; // fake
+
+    nLeafs++;
+    return n;
+}
+
+double parser::parseBranchLength() {
+    skipWhitespace();
+
+    // expect + consume ':'
+    if ( *ptr != ':') {
+        printLocation();
+        printf("parse error: parseBranchLength expects ':' at %zd\n", ptr - inputA.begin());
+        throw std::exception();
+    } else {
+
+        ++ptr;
+
+        skipWhitespace();
+
+        idi_t lend = findFloat(ptr);
+        if (lend == ptr) {
+            printf( "missing float number at %zd\n", ptr - inputA.begin() );
+            throw std::exception();
+        }
+
+        double l = atof(substring(ptr, lend).c_str());
+        ptr = lend;
+
+        return l;
+    }
+}
+parser::idi_t parser::findFloat(parser::idi_t pos) {
+    while (isFloatChar(*pos)) {
+        ++pos;
+    }
+
+    return pos;
+}
+void parser::twiddle(lnode* n1, lnode* n2, double branchLen, std::string branchLabel, double support) {
+    if ( n1->back != 0 ) {
+        printf( "n1.back != null" );
+        throw std::exception();
+    }
+
+    if ( n2->back != 0 ) {
+        printf( "n2.back != null" );
+        throw std::exception();
+    }
+
+    n1->back = n2;
+    n2->back = n1;
+
+    n1->backLen = branchLen;
+    n2->backLen = branchLen;
+    n1->backLabel = branchLabel;
+    n2->backLabel = branchLabel;
+    n1->backSupport = support;
+    n2->backSupport = support;
+
+}
+
+lnode* parser::parseInnerNode() {
+//         printf( "parseInnerNode\n" );
+    skipWhitespace();
+
+
+    // expect + consume '('
+    if ( *ptr != '(') {
+        printLocation();
+        printf("parse error: parseInnerNode expects '(' at %zd\n", ptr - inputA.begin());
+        throw std::exception();
+    }
+    ptr++;
+
+    // parse left node + branch length
+    lnode *nl = parseNode();
+    double l1 = parseBranchLength();
+    std::string label1 = parseBranchLabel();
+
+
+    skipWhitespace();
+
+
+    // expect + consume ','
+    if ( *ptr != ',') {
+        printLocation();
+        printf("parse error: parseInnerNode expects ',' at %zd\n", ptr - inputA.begin());
+        throw std::exception();
+    }
+    ptr++;
+
+
+    // parse right node + branch length
+    lnode *nr = parseNode();
+    double l2 = parseBranchLength();
+    std::string label2 = parseBranchLabel();
+
+    skipWhitespace();
+
+
+    nInnerNodes++;
+    if ( *ptr == ')') {
+        // 'normal' inner node: two childs
+        ptr++;
+
+        double support;
+        std::string nodeLabel;
+
+        if ( *ptr == ';') {
+            // oh my god. a fucking rooted tree
+            double sup = std::max( nl->m_data->getSupport(), nr->m_data->getSupport());
+            //System.out.printf( "rooted shit: %s %s %f %f %f %f\n", label1, label2, nl.data.getSupport(), nr.data.getSupport(), l1, l2);
+            twiddle( nl, nr, l1 + l2, label1, sup );
+
+            return nl;
+        }
+
+        if ( *ptr != ':' && *ptr != ',' && *ptr != ')' ) {
+            // the stuff between the closing '(' and the ':' of the branch length
+            // is interpreted as node-label. If the node label corresponds to a float value
+            // it is interpreted as branch support (or node support as a rooted-trees-only-please biologist would say)
+
+            idi_t lend = findEndOfBranch(ptr);
+
+            nodeLabel = substring(ptr, lend);
+            ptr = lend;
+
+            bool isDigit = true;
+            for ( size_t i = 0; i < nodeLabel.size(); i++ ) {
+                isDigit = isDigit && std::isdigit(nodeLabel.at(i));
+
+                if ( i == 0 ) {
+                    isDigit = isDigit && (nodeLabel.at(i) != '0');
+                }
+            }
+
+            if ( isDigit ) {
+
+                support = std::atof(nodeLabel.c_str());
+            } else {
+
+                support = -1;
+            }
+
+
+//                int lend = findFloat(ptr);
+//                if (lend == ptr) {
+//                    printLocation();
+//                    throw new RuntimeException("missing float number at " + ptr);
+//                }
+//
+//                support = Double.parseDouble(substring(ptr, lend));
+//                ptr = lend;
+        } else {
+            support = -1.0;
+        }
+
+        lnode *n = lnode::create( m_pool );
+        n->m_data->setSupport(support);
+        n->m_data->setNodeLabel(nodeLabel);
+
+        twiddle( nl, n->next, l1, label1, nl->m_data->getSupport() );
+        twiddle( nr, n->next->next, l2, label2, nr->m_data->getSupport() );
+
+
+        return n;
+    } else if ( *ptr == ',') {
+        // second comma found: three child nodes == pseudo root
+        ptr++;
+
+        lnode *nx = parseNode();
+
+        double l3 = parseBranchLength();
+        std::string label3 = parseBranchLabel();
+        //   System.out.printf( "l3: %s\n", nx.data.getTipName() );
+        skipWhitespace();
+
+        if ( *ptr != ')' ) {
+            printLocation();
+
+            printf("parse error: parseInnerNode (at root) expects ') at %zd\n", ptr - inputA.begin());
+            throw std::exception();
+        }
+        ptr++;
+        skipWhitespace();
+
+        lnode *n = lnode::create( m_pool );
+
+        twiddle( nl, n->next, l1, label1, nl->m_data->getSupport() );
+        twiddle( nr, n->next->next, l2, label2, nr->m_data->getSupport() );
+        twiddle( nx, n, l3, label3, nx->m_data->getSupport() );
+
+//                      System.out.printf( "root: %f %f %f\n", nl.data.getSupport(), nr.data.getSupport(), nx.data.getSupport() );
+//                      System.exit(0);
+        return n;
+    } else {
+        printLocation();
+        printf("parse error: parseInnerNode expects ')'or ',' at %zd\n", ptr - inputA.begin());
+        throw std::runtime_error( "bailing out" );
+    }
+
+
+}
+bool parser::isOneOf(char c, const char* cs) {
+    while ( *cs != 0 ) {
+        if ( c == *cs ) {
+            return true;
+        }
+        ++cs;
+    }
+    return false;
+}
+parser::idi_t parser::findEndOfBranch(parser::idi_t pos) {
+    const char *termchars = ":,)";
+
+
+    while ( pos < inputA.end() && !isOneOf( *pos, termchars )) {
+        ++pos;
+    }
+    if ( pos == inputA.end() ) {
+        printLocation();
+        printf( "reached end of input while looking for end of branch label" );
+        throw std::exception();
+    }
+
+    return pos;
+}
+lnode* parser::parse() {
+    nLeafs = 0;
+    nInnerNodes = 0;
+
+    skipWhitespace();
+
+    if ( ptr >= inputA.end() ) {
+        // seems like we hit the end of the file
+        return 0;
+    }
+    // expect at least one node
+    lnode *node = parseNode();
+
+    // expect terminating ';'
+    if (ptr >= inputA.end()) {
+        throw "parse error. parse: end of input. missing ';'";
+    }
+
+    // branch length might be present for historical reasons
+    if ( *ptr == ':' ) {
+        parseBranchLength();
+    }
+
+    if ( *ptr != ';') {
+        printLocation();
+        throw "parse error. parse expects ';'";
+    }
+    // consume terminating ;
+    ++ptr;
+    return node;
+}
+
+} // namespace tree_parser_ms
+
+} // namespace ivy_mike
 
 
 

@@ -300,7 +300,7 @@ public:
 
 };
 
-static void print_newick( lnode *node, std::ostream &os, bool root = true ) {
+inline void print_newick( lnode *node, std::ostream &os, bool root = true ) {
     if( node->m_data->isTip ) {
         os << node->m_data->tipName << ":" << node->backLen;
         if( !node->backLabel.empty() ) {
@@ -325,7 +325,7 @@ static void print_newick( lnode *node, std::ostream &os, bool root = true ) {
     }
 }
 
-static lnode *towards_tree( lnode *node ) {
+inline lnode *towards_tree( lnode *node ) {
     if( !node->m_data->isTip || node->back != 0 ) {
         return node;
     } else if( node->next->back != 0 ) {
@@ -337,7 +337,7 @@ static lnode *towards_tree( lnode *node ) {
     }
 }
 
-static lnode *next_non_tip( lnode *node ) {
+inline lnode *next_non_tip( lnode *node ) {
     if( !node->m_data->isTip ) {
         return node;
     } else {

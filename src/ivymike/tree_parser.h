@@ -21,21 +21,7 @@
 #include <cctype>
 #include "demangle.h"
 
-#if WIN32
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-
-
-namespace sptr = boost;
-#else
-#include <tr1/memory>
-#include <memory>
-namespace sptr = std::tr1;
-
-
-
-#endif
+#include "smart_ptr.h"
 // #include <boost/weak_ptr.hpp>
 #include <boost/intrusive/slist.hpp>
 #include <list>
@@ -189,7 +175,8 @@ class ln_pool
 public:
     
     // this version takes ownership of fact!
-    ln_pool( node_data_factory *fact ) : m_ad_fact(fact) {}
+    // TODO: change to unique_ptr when available!
+    ln_pool( std::auto_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     
     //ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}

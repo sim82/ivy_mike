@@ -84,7 +84,7 @@ public:
                 return *this;
             }
             
-            for( int i = 0; i < n_int; ++i ) {
+            for( size_t i = 0; i < n_int; ++i ) {
                 int_ticks[i] += other.int_ticks[i];
             }
         }

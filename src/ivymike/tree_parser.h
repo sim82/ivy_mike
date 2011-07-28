@@ -12,6 +12,8 @@
  *  for more details.
  */
 
+#ifndef __ivymike__tree_parser_h
+#define __ivymike__tree_parser_h
 
 #include <vector>
 #include <fstream>
@@ -92,6 +94,12 @@ struct adata {
 
 };
     
+inline std::ostream &operator<<(std::ostream &os, const adata &ad ) {
+    ad.print( os );
+    return os;
+}
+
+
 struct ldata {
     virtual ~ldata() {}
 };
@@ -144,10 +152,6 @@ struct lnode
     
 };
 
-inline std::ostream &operator<<(std::ostream &os, const adata &ad ) {
-    ad.print( os );
-    return os;
-}
 
 
 class node_data_factory {
@@ -339,3 +343,4 @@ inline lnode *next_non_tip( lnode *node ) {
 } // namespace tree_parser_ms
 
 }
+#endif

@@ -46,5 +46,18 @@ size_t count_equal( iiter1_ first1, iiter1_ last1, iiter2_ first2 ) {
 }
 
 
+template<typename T>
+  struct scaler_clamp {
+  	T m_s;
+  	T m_hi, m_lo;
+  	scaler_clamp( T s, T lo, T hi ) : m_s(s), m_hi(hi), m_lo(lo) {}
+
+  	T operator()( T v ) {
+  		return std::min( m_hi, std::max( m_lo, v * m_s ));;
+  	}
+
+  };
+
+
 }
 #endif

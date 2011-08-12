@@ -25,6 +25,21 @@ inline bool isa( T2 & ref ) {
 }
 
 
+// same_type stuff, copied from http://en.wikibooks.org/wiki/C%2B%2B_Programming/Templates/Template_Meta-Programming
+
+template<typename X, typename Y>
+struct same_type
+{
+   enum { result = 0 };
+};
+
+template<typename T>
+struct same_type<T, T>
+{
+   enum { result = 1 };
+};
+
+
 }
 
 

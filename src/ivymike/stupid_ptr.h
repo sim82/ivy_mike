@@ -77,6 +77,10 @@ public:
 
 class freeer {
     void *ptr;
+
+    freeer( const freeer &other ) {}
+    const freeer &operator=(const freeer &other ) { return *this; }
+
 public:
     freeer(void *ptr_) : ptr(ptr_) {}
     ~freeer() {

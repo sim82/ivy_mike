@@ -30,6 +30,10 @@ namespace ivy_mike {
 
 template<int PAD>
 class lockfree_spin_barrier {
+
+	lockfree_spin_barrier( const lockfree_spin_barrier &other ) {}
+	const lockfree_spin_barrier &operator=(const lockfree_spin_barrier &other ) { return *this; }
+
 public:
 	int m_num;
 	volatile char *m_flags;

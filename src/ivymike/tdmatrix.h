@@ -60,11 +60,16 @@ public:
     typedef T* iterator;
 private:
     
+    // WARNING: remember to change swap impl when member vars are changed!
+
     T* m_base;
     size_t m_asize;
     size_t m_bsize;
     
     bool m_own;
+
+    tdmatrix( const tdmatrix &other ) {}
+    const tdmatrix &operator=(const tdmatrix &other ) {return *this;};
 
 public:
     class row_iterator {
@@ -110,12 +115,22 @@ public:
         }
     }
     
+    const tdmatrix &swap( tdmatrix &other ) {
+    	std::swap( m_base, other.m_base );
+    	std::swap( m_own, other.m_own );
+    	std::swap( m_asize, other.m_asize );
+    	std::swap( m_bsize, other.m_bsize );
+
+    	return *this;
+	}
+
     void init_size( size_t asize, size_t bsize ) {
         // uuhm, is this the thing to do (TM) in the name of exception safety?
         
         tdmatrix<T> n(asize, bsize);
         
-        std::swap( *this, n );
+        //std::swap( *this, n );
+        swap(n);
     }
     
     
@@ -153,6 +168,8 @@ public:
         return m_asize;
     }
     
+
+
 };
 } // namespace ivy_mike
 

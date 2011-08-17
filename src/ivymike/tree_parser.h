@@ -108,13 +108,15 @@ struct ldata {
 class ln_pool;
 
     
-struct lnode 
+class lnode
     : public intrusive::slist_base_hook<> 
 
 {
 
-    
+    lnode( const lnode &other ) {}
+    const lnode &operator=(const lnode &other ) { return *this; }
 
+public:
     static lnode *create( ln_pool &pool );
 
 	
@@ -165,6 +167,8 @@ public:
     virtual ldata *alloc_ldata() {
         return 0;
     }
+
+    virtual ~node_data_factory() {}
 };
 
 class ln_pool 

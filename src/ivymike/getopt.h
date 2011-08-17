@@ -283,7 +283,7 @@ class parser {
     void add_opt_proxy( unsigned char c, std::auto_ptr<base_value> bv ); // takes ownership of bv
 
 public:
-    parser() : m_options(256), m_opt_has_argument(256),  m_option_count(256), m_opt_values(256) {}
+    parser() : m_options(256), m_opt_has_argument(256),  m_option_count(256), m_opt_strings(), m_opt_values(256) {}
 
     ~parser() ;
 

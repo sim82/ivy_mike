@@ -55,6 +55,11 @@ lnode *lnode::create( ln_pool &pool ) {
 
 void ln_pool::sweep() {
 
+	// TEST: auto-mark pinned roots
+	for( std::vector<lnode *>::iterator it = m_pinned_root.begin(); it != m_pinned_root.end(); ++it ) {
+		mark(*it);
+	}
+
     size_t size1 = m_list.size();
 
     for ( lt::iterator it = m_list.begin(); it != m_list.end(); ) {
@@ -111,6 +116,22 @@ void ln_pool::mark(lnode* n) {
         }
     }
 
+}
+
+
+void ln_pool::pin_root( lnode *node ) {
+	m_pinned_root.push_back(node);
+}
+
+void ln_pool::unpin_root( lnode *node ) {
+	const size_t oldsize = m_pinned_root.size();
+
+	m_pinned_root.erase( std::remove( m_pinned_root.begin(), m_pinned_root.end(), node ), m_pinned_root.end());
+
+	if( oldsize != m_pinned_root.size() + 1 ) {
+		std::cerr << oldsize << " -> " << m_pinned_root.size() << std::endl;
+		throw std::runtime_error( "ln_pool::unpin_root: root not pinned or duplicate");
+	}
 }
 
 void parser::readFile(const char* f, std::vector< char >& data) {

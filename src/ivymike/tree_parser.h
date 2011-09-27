@@ -175,7 +175,8 @@ class ln_pool
 {
      
     typedef intrusive::slist<lnode> lt;
- 
+    std::vector<lnode *> m_pinned_root;
+
     lt m_list;
 
     //sptr::shared_ptr<node_data_factory> m_ad_fact;
@@ -210,7 +211,35 @@ public:
     void sweep() ;
     void clear() ;
     
-    
+    void pin_root( lnode *n );
+    void unpin_root( lnode *n );
+};
+
+
+class ln_pool_pin {
+	lnode * m_pin;
+	ln_pool &m_pool;
+
+public:
+	ln_pool_pin( lnode *node, ln_pool &pool ) : m_pin( node ), m_pool(pool) {
+		m_pool.pin_root(m_pin);
+	}
+
+	~ln_pool_pin() {
+		if( m_pin != 0 ) {
+			release();
+		}
+	}
+
+	void release() {
+		if( m_pin == 0 ) {
+			throw std::runtime_error( "ln_pool_pin::release called with m_pin == 0" );
+		}
+		m_pool.unpin_root(m_pin);
+		m_pin = 0;
+	}
+
+
 };
 
 class parser {

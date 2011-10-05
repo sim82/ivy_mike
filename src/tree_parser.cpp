@@ -124,7 +124,7 @@ void parser::readFile(const char* f, std::vector< char >& data) {
     std::ifstream::off_type size = is.tellg();
     is.seekg( 0, std::ios_base::beg );
 
-    data.resize( size );
+    data.resize( size_t(size) );
 
     is.read( data.data(), size );
 

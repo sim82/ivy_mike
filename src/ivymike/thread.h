@@ -29,9 +29,16 @@
 // And his name, that sat on him, was Windows.h.
 // And Instant Namespace Pollution followed with him.
 
+//#if defined(WIN32) && !defined(_M_X64)
+//#define GODAWFULLY_STUPID_32_BIT_WINDOWS_CALLING_CONVENTION __stdcall
+//#else
+//#define GODAWFULLY_STUPID_32_BIT_WINDOWS_CALLING_CONVENTION
+//#endif
+
 
 namespace ivy_mike {
 // TODO: the windows implementation is completely untested, but seems to work for pw_dist
+
 
 class thread {
 public:
@@ -45,7 +52,7 @@ private:
 	const thread& operator=(const thread &other );
 
 	template<typename callable>
-    static DWORD call( void *f ) {
+    static DWORD __stdcall call( void *f ) {
         std::auto_ptr<callable> c(static_cast<callable *>(f));
         try {
             (*c)();

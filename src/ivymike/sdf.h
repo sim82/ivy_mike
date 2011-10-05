@@ -309,7 +309,7 @@ private:
 
         typename std::map< atom_ele_t, int >::iterator it = m_atomtype_map.find( ele );
         if ( it == m_atomtype_map.end() ) {
-            int nid = m_atomtype_map.size();
+            int nid = int(m_atomtype_map.size());
             m_atomtype_map[ele] = nid;
             return nid;
         } else {
@@ -329,7 +329,7 @@ private:
     int canonicalize_bond_type(int type) {
         std::map< int, int >::iterator it = m_bondtype_map.find(type);
         if ( it == m_bondtype_map.end() ) {
-            int nid = m_bondtype_map.size();
+            int nid = int(m_bondtype_map.size());
             m_bondtype_map[type] = nid;
             return nid;
         } else {
@@ -400,13 +400,13 @@ private:
             nt[10] = 0;
 
             std::copy( line, line + 10, nt );
-            const float x = atof( nt );
+            const float x = float(atof( nt ));
 
             std::copy( line + 10, line + 10 + 10, nt );
-            const float y = atof( nt );
+            const float y = float(atof( nt ));
 
             std::copy( line + 20, line + 20 + 10, nt );
-            const float z = atof( nt );
+            const float z = float(atof( nt ));
 
             std::copy( line + 30, line + 30 + 3, nt );
             nt[3] = 0;
@@ -540,7 +540,7 @@ public:
     }
 
     int num_can_atom_types() {
-        return m_atomtype_map.size();
+        return int(m_atomtype_map.size());
     }
 
 
@@ -659,11 +659,14 @@ public:
 // inline bool operator<(const typename sdf_int_::molecule &m1, const typename sdf_int_::molecule &m2 ) {
 //     return m1.size() < m2.size();
 // }
+
+#ifndef WIN32
 extern template class sdf_impl<sdf_int_full>;
 extern template class sdf_impl<sdf_int_eco>;
+#else
 typedef sdf_impl<sdf_int_full> sdf_full;
 typedef sdf_impl<sdf_int_eco> sdf_eco;
-
+#endif
 
 } // namespace ivy_mike
 #endif

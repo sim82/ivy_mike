@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <cctype>
+#include <cassert>
 #include "demangle.h"
 
 #include "smart_ptr.h"
@@ -222,6 +223,7 @@ class ln_pool_pin {
 
 public:
 	ln_pool_pin( lnode *node, ln_pool &pool ) : m_pin( node ), m_pool(pool) {
+		assert( m_pin != 0 );
 		m_pool.pin_root(m_pin);
 	}
 
@@ -331,6 +333,8 @@ inline void print_newick( lnode *node, std::ostream &os, bool root = true ) {
             os << "[" << node->backLabel << "]";
         }
     } else {
+    	assert( node->next->back != 0 );
+    	assert( node->next->next->back != 0 );
         os << "(";
         print_newick(node->next->back, os, false);
         os << ",";
@@ -372,6 +376,61 @@ inline lnode *next_non_tip( lnode *node ) {
     }
 }
 
+
+// 'transaction like' insert subtree starting at 'c' into the edge between e and e->back
+// unless 'commit' is called, 'c' will be removed on destruction, restoring the tree
+// (hopefully) to the same state as it was before insertion.
+//
+// c must be a 'tip' in a tree with at least two nodes, and c->next and c->next->next
+// are used to link into the other tree.
+
+class splice_with_rollback {
+	double m_len;
+	double m_support;
+	std::string m_label;
+
+	lnode *m_e1;
+	lnode *m_e2;
+	lnode *m_c;
+
+	bool m_commit;
+public:
+	splice_with_rollback( lnode *e, lnode *c ) : m_commit(false) {
+		m_len = e->backLen;
+		m_support = e->backSupport;
+		m_label = e->backLabel;
+
+		m_e1 = e;
+		m_e2 = e->back;
+		m_c = c;
+
+		m_e1->back = 0;
+		m_e2->back = 0;
+
+		assert( c->next->back == 0 );
+		assert( c->next->next->back == 0 );
+
+		parser::twiddle(m_e1, m_c->next, m_len / 2, "" /*"tmp1"*/, 0 );
+		parser::twiddle(m_e2, m_c->next->next, m_len / 2, "" /*"tmp2"*/, 0 );
+	}
+
+	~splice_with_rollback() {
+
+		if( !m_commit ) {
+			m_e1->back = 0;
+			m_e2->back = 0;
+			m_c->next->back = 0;
+			m_c->next->next->back = 0;
+
+			parser::twiddle( m_e1, m_e2, m_len, m_label, m_support );
+		}
+	}
+
+	void commit() {
+		m_commit = true;
+	}
+
+};
 
 } // namespace tree_parser_ms
 

@@ -28,7 +28,7 @@ private:
 
     bool m_own;
 public:
-    odmatrix( T* base, size_t size ) : m_base(base), m_size(size), m_own(false) {}
+    odmatrix( T* base, size_t size_ ) : m_base(base), m_size(size_), m_own(false) {}
     
     T &operator[](ptrdiff_t a) {
         return m_base[a];

@@ -97,7 +97,7 @@ class pinput {
     pinput();
 
 public:
-    pinput( const iter_t &beg, const iter_t &end ) : m_begin(beg), m_end(end) {}
+    pinput( const iter_t &beg, const iter_t &end_ ) : m_begin(beg), m_end(end_) {}
 
     void skip_whitespace() {
 //         while( m_begin != m_end && std::isspace(*m_begin) ) { // FIXME: do iterators generally allow to dereference iter.end()?
@@ -156,7 +156,7 @@ class value : public base_value {
     const bool m_allow_empty;
 public:
 //     value() : m_vref(0) {}
-    value( T &ref, bool allow_empty = false) : m_vref(ref), m_allow_empty(allow_empty) {}
+    value( T &ref, bool allow_empty_ = false) : m_vref(ref), m_allow_empty(allow_empty_) {}
 
     virtual ~value() {}
 

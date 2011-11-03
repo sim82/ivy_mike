@@ -5,6 +5,7 @@
 
 namespace ivy_mike {
 // the mighty twizzle algorithm (uhm, wouldn't the name binary_transform be more appropriate?)
+// NOTE TO SELF: dumbass, std::transform works for binary ops already...
 template<typename iiter1_, typename iiter2_, typename oiter_, typename function_>
 function_ binary_twizzle( iiter1_ first1, iiter1_ last1, iiter2_ first2, oiter_ res, function_ func ) {
     for( ; first1 != last1; ++first1, ++first2, ++res ) {
@@ -12,6 +13,10 @@ function_ binary_twizzle( iiter1_ first1, iiter1_ last1, iiter2_ first2, oiter_ 
     }
     return func;
 }
+
+
+
+
 
 template<typename iiter1_, typename iiter2_, typename pred_>
 size_t binary_count_if( iiter1_ first1, iiter1_ last1, iiter2_ first2, pred_ pred ) {
@@ -58,6 +63,16 @@ template<typename T>
 
   };
 
+// this should basically emulate what push_back( T && ) is doing in C++11. right?
+template<typename T>
+void push_back_swap( std::vector<T> &vec, T & v ) {
+	vec.push_back(T());
+	v.swap(vec.back());
+}
+
 
 }
+
+
+
 #endif

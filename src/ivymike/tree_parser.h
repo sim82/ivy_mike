@@ -60,10 +60,21 @@ struct adata {
         support = sup;
     }
 
+    //
+    // CHANGE: 26.10.2011: nodeLabel now stores the string after branch length (the
+    // same string is also used for the branch label.
+    // Previously the string directly after the closing ')' of a inner node has been used,
+    // which only works for inner nodes. This will now go into extra_node_label_
+    // CHECK IF THIS BREAKS ANYTHING!
+    //
     std::string nodeLabel;
+    std::string extra_node_label_;
     void setNodeLabel(const std::string &nl) {
-
         nodeLabel = nl;
+    }
+
+    void set_extra_node_label( const std::string &l ) {
+    	extra_node_label_ = l;
     }
 
     static int s_serial;

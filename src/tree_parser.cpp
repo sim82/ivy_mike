@@ -350,6 +350,7 @@ lnode* parser::parseInnerNode() {
     double l1 = parseBranchLength();
     std::string label1 = parseBranchLabel();
 
+    nl->m_data->setNodeLabel(label1);
 
     skipWhitespace();
 
@@ -367,6 +368,7 @@ lnode* parser::parseInnerNode() {
     lnode *nr = parseNode();
     double l2 = parseBranchLength();
     std::string label2 = parseBranchLabel();
+    nr->m_data->setNodeLabel(label2);
 
     skipWhitespace();
 
@@ -446,6 +448,8 @@ lnode* parser::parseInnerNode() {
         double l3 = parseBranchLength();
         std::string label3 = parseBranchLabel();
         //   System.out.printf( "l3: %s\n", nx.data.getTipName() );
+
+        nx->m_data->setNodeLabel(label3);
         skipWhitespace();
 
         if ( *ptr != ')' ) {

@@ -663,10 +663,9 @@ public:
 #ifndef WIN32
 extern template class sdf_impl<sdf_int_full>;
 extern template class sdf_impl<sdf_int_eco>;
-#else
+#endif
 typedef sdf_impl<sdf_int_full> sdf_full;
 typedef sdf_impl<sdf_int_eco> sdf_eco;
-#endif
 
 } // namespace ivy_mike
 #endif

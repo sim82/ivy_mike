@@ -217,7 +217,7 @@ struct sdf_int_eco {
         }
     };
     struct bond {
-        std::pair <uint8_t,uint8_t>     m_atoms;
+        std::pair <uint16_t,uint16_t>     m_atoms;
         uint8_t                     m_type;
         uint8_t                     m_can_type;
         // std::string             m_extra;
@@ -225,7 +225,7 @@ struct sdf_int_eco {
 
         bond( unsigned int first, unsigned int second, unsigned int type, unsigned int can_type ) : m_atoms(first,second), m_type(type), m_can_type(can_type)
         {
-            if ( first > 255 || second > 255 || type > 255 || can_type > 255 ) {
+            if ( first > 999 || second > 999 || type > 255 || can_type > 255 ) {
 
                 throw std::runtime_error( "bond parameter out of range for sdf_eco" );
             }
@@ -663,10 +663,9 @@ public:
 #ifndef WIN32
 extern template class sdf_impl<sdf_int_full>;
 extern template class sdf_impl<sdf_int_eco>;
-#else
+#endif
 typedef sdf_impl<sdf_int_full> sdf_full;
 typedef sdf_impl<sdf_int_eco> sdf_eco;
-#endif
 
 } // namespace ivy_mike
 #endif

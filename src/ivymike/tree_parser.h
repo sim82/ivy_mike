@@ -22,6 +22,7 @@
 #include <sstream>
 #include <cctype>
 #include <cassert>
+#include <iostream>
 #include "demangle.h"
 
 #include "smart_ptr.h"

@@ -511,12 +511,16 @@ private:
 
 public:
     sdf_impl( std::istream &is, bool allow_hydrogen = true ) : m_allow_hydrogen(allow_hydrogen) {
-        while ( parse_molecule( m_molecules, is ) ) {
-            // printf( "mol: %zd\n", m_molecules.size() );
-        }
+        append(is);
 //         getchar();
     }
 
+
+    void append( std::istream &is ) {
+        while ( parse_molecule( m_molecules, is ) ) {
+            // printf( "mol: %zd\n", m_molecules.size() );
+        }
+    }
 
     const std::vector<molecule> &get_molecules() {
 

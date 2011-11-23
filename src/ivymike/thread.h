@@ -310,6 +310,10 @@ template <typename mtx_t>
 class lock_guard {
     mtx_t &m_mtx;
     
+
+    lock_guard( const lock_guard & );
+    lock_guard &operator=(const lock_guard & );
+
 public:
     lock_guard( mtx_t &mtx ) 
      : m_mtx(mtx)

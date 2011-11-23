@@ -22,6 +22,7 @@
 #include <sstream>
 #include <cctype>
 #include <cassert>
+#include <iostream>
 #include "demangle.h"
 
 #include "smart_ptr.h"
@@ -98,6 +99,11 @@ struct adata {
     template<typename T>
     T* get_as() {
         if( !ivy_mike::isa<T>(*this) ) {
+            std::cerr << "lnode::adata::get_as: trying incompatible dynamic type conversion:\n"
+                << ivy_mike::demangle(typeid(*this).name())
+                << "\ninto\n"
+                << ivy_mike::demangle(typeid(T).name()) << "\n";
+
             throw std::runtime_error( "dynamic cast failed\n" );
         }
         

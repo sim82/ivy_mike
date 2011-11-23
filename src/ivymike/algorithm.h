@@ -2,6 +2,8 @@
 #define __ivy_mike__algorithm_h
 
 #include <algorithm>
+#include <functional>
+#include <vector>
 
 namespace ivy_mike {
 // the mighty twizzle algorithm (uhm, wouldn't the name binary_transform be more appropriate?)
@@ -70,6 +72,10 @@ void push_back_swap( std::vector<T> &vec, T & v ) {
 	v.swap(vec.back());
 }
 
+
+// idea from http://www.dev102.com/2009/01/12/c-tip-how-to-get-array-length/
+template<typename T, int size>
+int arrlen(T(&)[size]){return size;}
 
 }
 

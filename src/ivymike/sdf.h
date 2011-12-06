@@ -361,6 +361,8 @@ private:
         molecule &mol = cont.back();
 
         mol.m_header = line;
+        mol.m_header.erase( std::remove_if(mol.m_header.begin(), mol.m_header.end(), isspace ), mol.m_header.end() );
+
         is.getline(line, line_len);
         assert( !is.eof() );
 

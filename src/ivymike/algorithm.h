@@ -66,6 +66,7 @@ template<typename T>
   };
 
 // this should basically emulate what push_back( T && ) is doing in C++11. right?
+// WARNING: parameter v will be left empty.
 template<typename T>
 void push_back_swap( std::vector<T> &vec, T & v ) {
 	vec.push_back(T());

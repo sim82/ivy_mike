@@ -345,6 +345,8 @@ public:
 
 inline void print_newick( lnode *node, std::ostream &os, bool root = true ) {
     if( node->m_data->isTip ) {
+        assert( !root ); // MEEEEP: unhandled case: tip given as starting node! Can't be bothered now to fix it.
+
         os << node->m_data->tipName << ":" << node->backLen;
         if( !node->backLabel.empty() ) {
             os << "[" << node->backLabel << "]";
@@ -448,6 +450,13 @@ public:
 	}
 
 };
+
+
+// forward to stupid static method (why did I put it in a static method? bad java habit?)
+inline void twiddle_nodes( lnode *n1, lnode *n2, double branchLen, std::string branchLabel, double support ) {
+    parser::twiddle( n1, n2, branchLen, branchLabel, support );
+
+}
 
 } // namespace tree_parser_ms
 

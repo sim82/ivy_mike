@@ -32,7 +32,7 @@ bool multiple_alignment::load_phylip( std::istream &is ) {
     is >> nTaxon;
     is >> seqLen;
 
-    printf( "header: %zd %zd\n", nTaxon, seqLen );
+//     printf( "header: %zd %zd\n", nTaxon, seqLen );
 
     size_t n = 0;
 

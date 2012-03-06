@@ -82,7 +82,8 @@ void ln_pool::sweep() {
 
     size_t size2 = m_list.size();
 
-    printf( "sweep: %zd -> %zd\n", size1, size2 );
+   // printf( "sweep: %zd -> %zd\n", size1, size2 );
+    std::cerr << "sweep: " << size1 << " -> " << size2 << "\n";
 }
 void ln_pool::clear() {
     for ( lt::iterator it = m_list.begin(); it != m_list.end(); ++it ) {

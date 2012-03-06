@@ -451,7 +451,86 @@ public:
 
 };
 
-
+class prune_with_rollback {
+public:
+    prune_with_rollback( lnode *n ) : commit_(false), n_(n) {
+        if( n->next->back == 0 || n->next->next->back == 0 ) {
+            throw std::runtime_error( "trying to prune tip or unlinked node" );
+        }
+            
+        
+        back1_ = n->next->back;
+        back2_ = n->next->next->back;
+        
+        len1_ = n->next->backLen;
+        len2_ = n->next->next->backLen;
+        
+        label1_ = n->next->backLabel;
+        label2_ = n->next->next->backLabel;
+        
+        support1_ = n->next->backSupport;
+        support2_ = n->next->next->backSupport;
+        
+       
+        n->next->back = 0;
+        n->next->next->back = 0;
+        
+        back1_->back = back2_;
+        back2_->back = back1_;
+        
+        double new_len = back1_->backLen + back2_->backLen;
+        std::string back_label = back1_->backLabel + back2_->backLabel;
+        back1_->backLen = back2_->backLen = new_len;
+        back1_->backLabel = back2_->backLabel = back_label;
+        back1_->backSupport = back2_->backSupport = 0.0;
+        
+    }
+    
+    ~prune_with_rollback() {
+        if( !commit_ ) {
+            std::cerr << "WARNING: untested code: ~prune_with_rollback!!!!\n";
+            
+            n_->next->back = back1_;
+            n_->next->next->back = back2_;
+        
+            back1_->back = n_->next;
+            back2_->back = n_->next->next;
+            
+            n_->next->back->backLen = n_->next->backLen = len1_;
+            n_->next->next->back->backLen = n_->next->next->backLen = len2_;
+        
+            n_->next->back->backLabel = n_->next->backLabel = label1_;
+            n_->next->next->back->backLabel = n_->next->next->backLabel = label2_;
+        
+            n_->next->back->backSupport = n_->next->backSupport = support1_;
+            n_->next->next->back->backSupport = n_->next->next->backSupport = support2_;
+        }
+    }
+    
+    void commit() {
+        commit_ = true;
+    }
+    
+    lnode *get_save_node() {
+        // return lnode that is guaranteed to be still part of the tree after the pruning.
+        return back1_;
+    }
+    
+private:
+    bool commit_;
+    
+    double len1_;
+    double len2_;
+    std::string label1_;
+    std::string label2_; 
+    double support1_;
+    double support2_;
+    
+    lnode *n_;
+    
+    lnode *back1_;
+    lnode *back2_;
+};
 // forward to stupid static method (why did I put it in a static method? bad java habit?)
 inline void twiddle_nodes( lnode *n1, lnode *n2, double branchLen, std::string branchLabel, double support ) {
     parser::twiddle( n1, n2, branchLen, branchLabel, support );

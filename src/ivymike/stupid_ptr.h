@@ -2,6 +2,7 @@
 #define __ivy_mike__stupid_ptr_h
 #include <stdexcept>
 #include <cstdlib>
+#include <cstdio>
 
 namespace ivy_mike {
     
@@ -72,7 +73,7 @@ public:
 };
 
 //
-// freeer: exactly what it's name suggests. For lazy c++ programmers.
+// freeer/fcloser: exactly what it's name suggests. For lazy c++ programmers.
 //
 
 class freeer {
@@ -88,6 +89,15 @@ public:
     }
 };
 
+class fcloser {
+    FILE *h_;
+    fcloser( FILE *h ) : h_(h) {}
+    ~fcloser() {
+        if( h_ != 0 ) {
+            fclose( h_ );
+        }
+    }
+};
     
 }
 

@@ -512,13 +512,15 @@ void apply_lnode( lnode *n, Tfunc func, bool go_back = true ) {
     }
 };
 
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 // TEST" implement interate_node in terms of the more generic lnode_apply
 template <typename lnode, typename oiter>
 void iterate_lnode_test( lnode *n, oiter start, bool go_back = true ) {
     // call recurseve apply with a 'iterator inserter' lambda
     apply_lnode(n, [&start](lnode *n) {*(start++)=n;}, go_back );
 };
-
+#endif
 
 
 // UNTESTED: back_insert_iterator that only only inserts if predicate is true (TDD is for pussies)

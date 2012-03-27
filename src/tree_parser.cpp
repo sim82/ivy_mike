@@ -348,7 +348,12 @@ lnode* parser::parseInnerNode() {
 
     // parse left node + branch length
     lnode *nl = parseNode();
-    double l1 = parseBranchLength();
+    
+    double l1 = 1.0;
+    if( *ptr == ':' ) {
+        l1 = parseBranchLength();
+    }
+    
     std::string label1 = parseBranchLabel();
 
     nl->m_data->setNodeLabel(label1);
@@ -367,7 +372,12 @@ lnode* parser::parseInnerNode() {
 
     // parse right node + branch length
     lnode *nr = parseNode();
-    double l2 = parseBranchLength();
+    double l2 = 1.0;
+    if( *ptr == ':' ) {
+        l2 = parseBranchLength();
+    }
+    
+    
     std::string label2 = parseBranchLabel();
     nr->m_data->setNodeLabel(label2);
 
@@ -446,7 +456,11 @@ lnode* parser::parseInnerNode() {
 
         lnode *nx = parseNode();
 
-        double l3 = parseBranchLength();
+        double l3 = 1.0;
+        if( *ptr == ':' ) {
+            l3 = parseBranchLength();
+        }
+        
         std::string label3 = parseBranchLabel();
         //   System.out.printf( "l3: %s\n", nx.data.getTipName() );
 

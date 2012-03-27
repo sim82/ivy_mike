@@ -334,6 +334,15 @@ public:
         //  this.input = new String(inputA);
         ptr = inputA.begin();
     }
+    
+    template<typename iiter>
+    parser( iiter first, iiter last, ln_pool &pool ) : m_pool(pool) {
+        QUIET = false;
+        
+        inputA.assign( first, last );
+        ptr = inputA.begin();
+    }
+    
     /**
      * Call this after object construction to parse the complete tree,
      * @return pseudo root of the tree
@@ -458,7 +467,7 @@ public:
             throw std::runtime_error( "trying to prune tip or unlinked node" );
         }
             
-        
+        assert( n != 0 );
         back1_ = n->next->back;
         back2_ = n->next->next->back;
         
@@ -488,7 +497,7 @@ public:
     
     ~prune_with_rollback() {
         if( !commit_ ) {
-            std::cerr << "WARNING: untested code: ~prune_with_rollback!!!!\n";
+            // std::cerr << "WARNING: untested code: ~prune_with_rollback!!!!\n"; // it seems to work in the spr_vis_test code, what else could possibly go wrong?
             
             n_->next->back = back1_;
             n_->next->next->back = back2_;

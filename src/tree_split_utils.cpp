@@ -177,7 +177,7 @@ void ivy_mike::get_all_splits( lnode *t, std::vector< std::pair< lnode*, lnode* 
     splits.clear();
     splits.reserve( ec.m_edges.size() );
     
-    
+    std::cerr << "WARNING: probably using buggy code!\n";
     for( std::vector< std::pair< lnode*, lnode* > >::iterator it = ec.m_edges.begin(); it != ec.m_edges.end(); ++it ) {
         
 //         std::cout << "edge: " << it->first->m_data->m_serial << " " << it->second->m_data->m_serial << "\n";
@@ -190,6 +190,8 @@ void ivy_mike::get_all_splits( lnode *t, std::vector< std::pair< lnode*, lnode* 
         
 //         std::cout << "count: " << bs1.count() << " " << bs2.count() << "\n";
         
+        // FIXME: REVIEW: this might be an error: res maps from _undirected_ node to split!
+        // replace with code from get_all_splits_by_node
         
         const size_t c1 = bs1.count();
         const size_t c2 = bs2.count();
@@ -212,6 +214,125 @@ void ivy_mike::get_all_splits( lnode *t, std::vector< std::pair< lnode*, lnode* 
     sorted_tips.swap(tc.m_nodes);
     
 }
+
+
+void ivy_mike::get_all_splits_by_node( lnode *t, std::vector<lnode*> &nodes, std::vector<boost::dynamic_bitset<> > &splits, std::vector<lnode *> &sorted_tips ) {
+    
+    tip_collector_dumb<lnode> tc;
+    visit_lnode( t, tc );
+    
+//     std::cout << tc.m_nodes.size() << "\n";
+    
+    sort_tip_serial( tc.m_nodes );
+    
+    const size_t ntips = tc.m_nodes.size();
+
+    
+    std::deque<rooted_bifurcation<lnode> > trav_order;
+    rooted_traversal_order(t, t->back, trav_order, false );
+    
+    std::tr1::unordered_map<lnode *, boost::dynamic_bitset<> > res;
+    
+    
+//     std::cout << "start: " << t->m_data->m_serial << " " << t->back->m_data->m_serial << "\n";
+    
+    
+    // add trivial splits
+    for( std::vector< lnode* >::const_iterator it = tc.m_nodes.begin(); it != tc.m_nodes.end(); ++it ) {
+        assert( res.find( *it ) == res.end() );
+        boost::dynamic_bitset<> &bs = res[*it];
+        bs.resize(ntips);
+        bs[(*it)->m_data->tipSerial] = true;
+    }
+    
+    for( std::deque< rooted_bifurcation< ivy_mike::tree_parser_ms::lnode > >::const_iterator it = trav_order.begin(); it != trav_order.end(); ++it ) {
+        
+//         std::cout << *it << "\n";
+        switch( it->tc ) {
+        case TIP_TIP:    
+        {
+            const int pser = it->parent->m_data->m_serial;
+            boost::dynamic_bitset<> &bs = res[it->parent];
+            bs.resize(ntips);
+            
+            bs[it->child1->m_data->tipSerial] = true;
+            bs[it->child2->m_data->tipSerial] = true;
+            
+           
+            
+            break;
+        }
+        case TIP_INNER:
+        {
+//             const int pser = it->parent->m_data->m_serial;
+            boost::dynamic_bitset<> &bs = res[it->parent];
+            
+            lnode * c2 = it->child2;
+            assert( res.find( c2 ) != res.end() );
+            boost::dynamic_bitset<> &bs_c2 = res[c2];
+            
+            bs = bs_c2;
+            assert( !bs[it->child1->m_data->tipSerial] );
+            bs[it->child1->m_data->tipSerial] = true;
+            
+            break;
+        }
+        case INNER_INNER:
+        {
+            const int pser = it->parent->m_data->m_serial;
+            boost::dynamic_bitset<> &bs = res[it->parent];
+            
+            lnode *c1 = it->child1;
+            lnode *c2 = it->child2;
+            assert( res.find( c1 ) != res.end() );
+            assert( res.find( c2 ) != res.end() );
+            boost::dynamic_bitset<> &bs_c1 = res[c1];
+            boost::dynamic_bitset<> &bs_c2 = res[c2];
+            
+            bs = bs_c1;
+            bs |= bs_c2;
+                        
+            //std::cout << "inner inner: " << bs_c1.count() << " " << bs_c2.count() << "\n";
+            
+            break;
+        }
+        }
+        
+    }
+    
+    splits.clear();
+    nodes.clear();
+//     splits.reserve( ec.m_edges.size() );
+    
+    for( std::tr1::unordered_map<lnode *, boost::dynamic_bitset<> >::iterator it = res.begin(), end = res.end(); it != end; ++it ) {
+        lnode *n = it->first;
+        
+        //assert( res.find(n->back) == res.end());
+        
+        boost::dynamic_bitset<> bs = it->second; // make a copy, so that it can be flipped in place for adding n->back
+        
+        nodes.push_back(n);
+        splits.push_back(bs);
+        
+        if( res.find( n->back ) == res.end() ) {
+            // if n->back is not contained in res, add it with the flipped bitset (n->back will be in res iff n == t == the virtual root of the traversal)
+            //  std::cout << "both: " << n << "\n";
+            
+            nodes.push_back(n->back);
+            bs.flip();
+            splits.push_back(bs);
+
+
+        }
+        
+        
+        
+    }
+    
+    sorted_tips.swap(tc.m_nodes);
+    
+}
+
 
 bool ivy_mike::equal_tip_names( const ivy_mike::tree_parser_ms::lnode * n1, const ivy_mike::tree_parser_ms::lnode * n2 )
 {

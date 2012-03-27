@@ -15,7 +15,7 @@ PROJECT(ivymike)
 #SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
 
 #ADD_LIBRARY(ivymike src/main.cpp src/LargePhylip.cpp src/time.cpp )
-ADD_LIBRARY(ivymike src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp src/decimal.cpp )
+ADD_LIBRARY(ivymike src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp )
 
 
 INSTALL(TARGETS ivymike

@@ -275,25 +275,50 @@ public:
 
 namespace ivy_mike {
 class thread_group {
-    std::vector<ivy_mike::thread *> m_threads;
+    std::vector<thread *> m_threads;
     
 public:
-    template<typename callable>
-    void create_thread( const callable &c ) {
-        ivy_mike::thread *t = new ivy_mike::thread( c );
+    
+    ~thread_group() {
+//         std::cout << "thread_group destructor: fallback join:\n";
+//         for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
+//             std::cout << "joinable: " << (*it)->joinable() << "\n";
+//         }
         
-        m_threads.push_back(t);
+        join_all();
+        
+        for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
+            delete *it;
+        }
+        
     }
     
     
-    void join_all() {
-        for( std::vector<ivy_mike::thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
-            (*it)->join();
-            
-            delete (*it);
-        }
+    
+    template<typename callable>
+    void create_thread( const callable &c ) {
+        m_threads.push_back(0); // may throw. so pre-allocate before the thread is created
+        m_threads.back() = new thread( c );
         
-        m_threads.resize(0);
+        
+    }
+    
+    
+    void join_all() throw() {
+        
+        try {
+            for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
+                if( (*it)->joinable() ) {
+                    (*it)->join();
+                }
+                
+                //delete (*it);
+            }
+            
+            m_threads.resize(0);
+        } catch(...) {
+            std::cerr << "BUG: unexpected exception in thread_group::join_all\n"; // kind of stupid: printing this message might throw...
+        }
     }
     
     size_t size() {

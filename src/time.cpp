@@ -51,7 +51,7 @@ double ivy_mike::gettime(void )
 
 double ivy_mike::perf_timer::my_getticks() {
 #if defined(WIN32) && !defined(_M_X64)
-	return getticks().QuadPart;
+	return double(getticks().QuadPart);
 #else
 	return double(getticks());
 #endif

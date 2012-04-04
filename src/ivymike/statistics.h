@@ -102,8 +102,8 @@ double correlation( const cont &v1, const cont &v2) {
 
 
 float covariance( std::vector<float> &v1, std::vector<float> &v2) {
-    float m1 = mean(v1);
-    float m2 = mean(v2);
+    double m1 = mean(v1);
+    double m2 = mean(v2);
     
     assert( v1.size() == v2.size() );
     
@@ -111,18 +111,18 @@ float covariance( std::vector<float> &v1, std::vector<float> &v2) {
 //     float var1 = 0;
 //     float var2 = 0;
     for( size_t i = 0; i < v1.size(); i++ ) {
-        const float d1 = (v1[i] - m1);
-        const float d2 = (v2[i] - m2);
+        const float d1 = float(v1[i] - m1);
+        const float d2 = float(v2[i] - m2);
         cov += d1 * d2;
     }
     return cov;
 }
 float std_dev( std::vector<float> &v ) {
-    float m = mean(v);
+    double m = mean(v);
     
     float var = 0;
     for( size_t i = 0; i < v.size(); i++ ) {
-        const float d = (v[i] - m);
+        const float d = float(v[i] - m);
         var += d * d;
     }
     

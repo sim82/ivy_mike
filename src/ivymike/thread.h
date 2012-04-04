@@ -22,8 +22,8 @@
 // funny win32 api fact: you can deactivate everything and the thread implementation still works.
 // This clearly proves that threads are the only part of the win32 api which does not suck. What does the "32" stand for, btw.?
 #include "ivymike/disable_shit.h"
-
 #include <windows.h> // oh noes, the dreadful msdn advise from hell: "Header Winbase.h (include Windows.h)"
+#include <process.h>    /* _beginthread, _endthread */
 // And I heard a voice in the midst of the four beasts,
 // And I looked and behold: a pale horse.
 // And his name, that sat on him, was Windows.h.
@@ -43,16 +43,16 @@ namespace ivy_mike {
 class thread {
 public:
 	typedef HANDLE native_handle_type;
-
+	
 
 private:
-	HANDLE m_thread;
+	native_handle_type m_thread;
 
 	thread( const thread &other );
 	const thread& operator=(const thread &other );
 
 	template<typename callable>
-    static DWORD __stdcall call( void *f ) {
+    static unsigned int __stdcall call( void *f ) {
         std::auto_ptr<callable> c(static_cast<callable *>(f));
         try {
             (*c)();
@@ -68,6 +68,7 @@ private:
             throw;
         }
        
+		_endthreadex(0);
         return 0;
     }
     
@@ -77,6 +78,7 @@ public:
 
 	template<typename callable>
     thread( const callable &c ) {
+#if 0
 		m_thread = CreateThread( 
             NULL,                   // default security attributes
             0,                      // use default stack size  
@@ -88,6 +90,16 @@ public:
         if( m_thread == NULL) {
             throw std::runtime_error( "could not create thread: don't know why." );
         } 
+#else
+		// holy crap, the c runtime on windows is a real mess... CreateThread seems to be kind of unsafe for some strange reason
+		m_thread = (HANDLE)_beginthreadex(NULL,                   // default security attributes
+            0,                      // use default stack size  
+            call<callable>,       // thread function name
+            new callable(c),          // argument to thread function 
+            0,                      // use default creation flags 
+            NULL);   // returns the thread identifier 
+		
+#endif
     }
     
     ~thread() {
@@ -109,9 +121,9 @@ public:
     void join() {
         
         if( joinable() ) {
-
+			std::cerr << "joining ..." << std::endl;
 			WaitForSingleObject( m_thread, INFINITE );
-
+			std::cerr << "done" << std::endl;
             m_thread = NULL;
         }
     }
@@ -280,10 +292,10 @@ class thread_group {
 public:
     
     ~thread_group() {
-//         std::cout << "thread_group destructor: fallback join:\n";
-//         for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
-//             std::cout << "joinable: " << (*it)->joinable() << "\n";
-//         }
+         //std::cout << "thread_group destructor: fallback join:\n";
+         for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
+             std::cout << "WARNING: joinable thread in ~thread_group(). This probably means there was an uncaught exception: " << (*it)->joinable() << "\n";
+         }
         
         join_all();
         

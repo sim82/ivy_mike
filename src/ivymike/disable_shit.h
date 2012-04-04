@@ -1,3 +1,4 @@
+#if 1
 #define NOGDICAPMASKS     
 #define NOVIRTUALKEYCODES 
 #define NOWINMESSAGES     
@@ -22,7 +23,7 @@
 #define NOMB              
 #define NOMEMMGR          
 #define NOMETAFILE        
-#define NOMINMAX          
+
 #define NOMSG             
 #define NOOPENFILE        
 #define NOSCROLL          
@@ -37,6 +38,8 @@
 #define NOPROFILER        
 #define NODEFERWINDOWPOS  
 #define NOMCX 
+#endif
+#define NOMINMAX          
 #define WIN32_LEAN_AND_MEAN
 
 // sadly these two don't seem to work

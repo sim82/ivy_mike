@@ -18,7 +18,7 @@ static void write_png( ma_t &ma, std::ostream &os ) {
     
     
     
-    float rng = max_value-min_value;
+    float rng = float(max_value-min_value);
     
     os << "P2\n";
     os << ma.size() << " " << ma[0].size() << "\n";

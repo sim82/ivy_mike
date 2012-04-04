@@ -139,7 +139,9 @@ public:
 
 	
 	
-    lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false), m_thisptr(this), towards_root(false) {}
+    lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false), towards_root(false) {
+        m_thisptr.reset(this);
+    }
     virtual ~lnode() {
 // 		std::cout << "~lnode\n";
     }

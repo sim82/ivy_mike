@@ -61,7 +61,7 @@ struct sdf_int_full {
             ele_t r;
 
             int nns = 0;
-            for ( unsigned int i = 0; i < ele_t::size(); i++ ) {
+            for ( size_t i = 0; i < ele_t::size(); i++ ) {
 
                 if ( !isspace(ele[i] ) ) {
                     nns++;
@@ -191,7 +191,7 @@ struct sdf_int_eco {
             ele_t r;
 
             int nns = 0;
-            for ( unsigned int i = 0; i < ele_t::size(); i++ ) {
+            for ( size_t i = 0; i < ele_t::size(); i++ ) {
 
                 if ( !isspace(ele[i] ) ) {
                     nns++;
@@ -553,8 +553,8 @@ public:
     static void pad( char c, const std::string &s, int w, std::ostream &os ) {
 
         std::stringstream sp;
-        int len = 0;
-        while ( len + s.size() < w ) {
+        size_t len = 0;
+        while ( len + s.size() < size_t(w) ) {
             sp << c;
             len++;
         }
@@ -638,6 +638,7 @@ public:
                 add_atom( aid1, at1 );
                 add_atom( aid2, at2 );
             } else {
+				// FIXME: is this supposed to be the same as the 'then' branch?
                 add_atom( aid1, at1 );
                 add_atom( aid2, at2 );
             }

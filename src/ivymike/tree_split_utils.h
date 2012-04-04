@@ -24,6 +24,8 @@ double compare_trees( ivy_mike::tree_parser_ms::lnode *t1, ivy_mike::tree_parser
 
 void get_all_splits( ivy_mike::tree_parser_ms::lnode *t, std::vector< std::pair< ivy_mike::tree_parser_ms::lnode*, ivy_mike::tree_parser_ms::lnode* > > &edges, std::vector<boost::dynamic_bitset<> > &splits, std::vector<ivy_mike::tree_parser_ms::lnode *> &sorted_tips );
 
+void get_all_splits_by_node( ivy_mike::tree_parser_ms::lnode *t, std::vector<ivy_mike::tree_parser_ms::lnode*> &nodes, std::vector<boost::dynamic_bitset<> > &splits, std::vector<ivy_mike::tree_parser_ms::lnode *> &sorted_tips );
+
 } 
 
 #endif

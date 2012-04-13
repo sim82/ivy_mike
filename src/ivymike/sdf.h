@@ -12,6 +12,12 @@
  *  for more details.
  */
 
+//
+// read and write sdf/mdl (like) files, mostly according to the format described in
+// (Arthur Dalby et al., J. Chem. Inf. Comput. Sci, 1992, 32, 244-255) 
+// pdf: /http://pubs.acs.org/doi/pdf/10.1021/ci00007a012
+//
+
 
 #ifndef __ivymike_sdf
 #define __ivymike_sdf
@@ -26,7 +32,9 @@
 #include <cassert>
 #include <cstdlib>
 #include <stdint.h>
+#include <cmath>
 #include "boost/array.hpp"
+#include "boost/io/ios_state.hpp"
 
 namespace ivy_mike {
 
@@ -83,7 +91,14 @@ struct sdf_int_full {
             return r;
         }
         void print_mdl( std::ostream &os ) const {
-            os << "    0.0000    0.0000    0.0000" <<  m_ele[0] << m_ele[1] << m_ele[2] << "  0  0  0  0  0  0  0  0  0  0  0  0\n";
+                  
+            if( std::fabs( m_x ) > 9999 || std::fabs( m_y ) > 9999 || std::fabs( m_z ) > 9999 ) {
+                std::cerr << "xyz: " << m_x << " " << m_y << " " << m_z << "\n";
+                throw std::runtime_error( "molecule coordinate out of bounds" );
+            }
+            boost::io::ios_all_saver ias( os );
+            os << std::fixed << std::setprecision(4) <<  std::setw(10) <<  m_x <<  std::setw(10) << m_y << std::setw(10) << m_z <<  m_ele[0] << m_ele[1] << m_ele[2] << "  0  0  0  0  0  0  0  0  0  0  0  0\n";
+//             os << "    0.0000    0.0000    0.0000" <<  m_ele[0] << m_ele[1] << m_ele[2] << "  0  0  0  0  0  0  0  0  0  0  0  0\n";
         }
 
     };
@@ -342,7 +357,7 @@ private:
     std::vector<molecule> m_molecules;
     bool parse_molecule( std::vector<molecule> &cont, std::istream &is) {
         // parse one molecule block from the stream.
-        // implented as a 'free interpretation' of (Arthur Dalby et al., J. Chem. Inf. Comput. Sci, 1992, 32, 244-255)
+        // implented as a 'free interpretation' of (Arthur Dalby et al., J. Chem. Inf. Comput. Sci, 1992, 32, 244-255) pdf: http://pubs.acs.org/doi/pdf/10.1021/ci00007a012
 
 
         const size_t line_len = 256;

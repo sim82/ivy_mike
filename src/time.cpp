@@ -56,3 +56,4 @@ double ivy_mike::perf_timer::my_getticks() {
 	return double(getticks());
 #endif
 }
+

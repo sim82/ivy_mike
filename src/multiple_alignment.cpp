@@ -15,6 +15,7 @@
 #include <fstream>
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 #include "ivymike/multiple_alignment.h"
 
@@ -48,9 +49,18 @@ bool multiple_alignment::load_phylip( std::istream &is ) {
             
             break;
         }
+//         std::cout << "name: " << name << "\n";
+        if( seq.size() != seqLen ) {
+            std::cerr << "name: " << name << "\n";
+            std::cerr << "data: " << seq.size() << "\n";
+            
+            throw std::runtime_error( "bad sequence in phylip file\n" );
+        }
         
         names.push_back(name);
         data.push_back( std::vector<uint8_t>(seq.begin(), seq.end()));
+        
+        
 		
 		
 //         printf( "name: %s\n", name.c_str() );

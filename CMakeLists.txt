@@ -1,7 +1,11 @@
 cmake_minimum_required( VERSION 2.8 )
 
 IF(WIN32)
-include_directories( C:\\src\\boost_1_47_0)
+IF(NOT BOOST_ROOT)
+set(BOOST_ROOT C:\\src\\boost_1_47_0)
+ENDIF()
+
+include_directories( ${BOOST_ROOT} )
 file(GLOB IM_HEADERS *.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()

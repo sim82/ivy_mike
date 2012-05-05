@@ -18,6 +18,7 @@
 #define __ivy_mike__getopt_h
 
 #include <cstdlib>
+#include <cctype>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>

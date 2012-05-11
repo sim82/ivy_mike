@@ -36,6 +36,7 @@ LargePhylip::LargePhylip(const char* filename)
 
 
     map();
+	
     off_t ptr = 0;
 
     bool haveHeader = false;
@@ -105,15 +106,18 @@ void LargePhylip::print() {
     }
 }
 void LargePhylip::map() {
-
+	
     assert( m_buf == 0 );
     assert(m_fileSize > 0 );
 #if 0
     m_buf = (u1_t*)mmap( 0, m_fileSize, PROT_READ, MAP_PRIVATE, m_fd, 0 );
 #endif
     m_mapping = boost::interprocess::mapped_region( m_fm, boost::interprocess::read_only );
-    m_buf = (u1_t*) m_mapping.get_address();
+    assert(0);
+	m_buf = (u1_t*) m_mapping.get_address();
+	
     assert( m_buf != 0 );
+	
 }
 void LargePhylip::unmap() {
     assert(m_buf != 0);

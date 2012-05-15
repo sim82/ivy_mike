@@ -89,7 +89,7 @@ class LargePhylip {
     std::map<std::string,size_t> m_nameMap;
 
 
-    void interpret( off_t line, off_t lineLen, Rec &rec ) ;
+    void interpret( off_t line, off_t lineLen, Rec& rec, size_t seq_len = -1 ) ;
 
 
 

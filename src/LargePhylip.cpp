@@ -41,9 +41,14 @@ LargePhylip::LargePhylip(const char* filename)
 
     bool haveHeader = false;
     std::vector<Rec>::iterator currec; // When all you have is a hammer, everything looks like a nail
+    
+    size_t seq_len = -1;
     while ( ptr < m_fileSize ) {
         off_t spos = ptr;
 
+        if( seq_len != size_t(-1)) {
+            ptr+=seq_len;
+        }
         // FIXME: this assumes left to right execution of the expression!
         while ( ptr < m_fileSize && m_buf[ptr] != '\n' ) {
             ptr++;
@@ -70,11 +75,12 @@ LargePhylip::LargePhylip(const char* filename)
 
             m_nTaxa = atoi( name.c_str() );
             m_seqLen = atoi( data.c_str() );
+            seq_len = m_seqLen;
             m_recs.resize( m_nTaxa );
             currec = m_recs.begin();
         } else {
             if ( lineLen > 0 ) {
-                interpret(spos, lineLen, *currec );
+                interpret(spos, lineLen, *currec, seq_len );
                 std::string n = (*currec).getName(m_buf);
 
                 size_t idx = currec - m_recs.begin();
@@ -86,7 +92,8 @@ LargePhylip::LargePhylip(const char* filename)
                 m_nameMap[n] = idx;
                 m_maxNameLen = std::max( m_maxNameLen, int(n.length()) );
                 ++currec;
-
+                
+                
             }
         }
     }
@@ -115,7 +122,7 @@ void LargePhylip::map() {
     m_mapping = boost::interprocess::mapped_region( m_fm, boost::interprocess::read_only );
     assert(0);
 	m_buf = (u1_t*) m_mapping.get_address();
-	
+	//madvise(m_buf, m_fileSize, MADV_RANDOM );
     assert( m_buf != 0 );
 	
 }
@@ -134,11 +141,12 @@ int LargePhylip::getIdx(const char* name) {
         return -1;
     }
 }
-void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec) {
+void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec, size_t seq_len) {
     rec.name = line;
 
     off_t ptr = 0;
 
+        
     while ( ptr < lineLen && !isspace(*(m_buf + line + ptr) )) {
 
         ptr++;
@@ -151,6 +159,11 @@ void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec) {
 
 
     int nspace = 0;
+    
+//     if( seq_len != size_t(-1)) {
+//         ptr+=seq_len;
+//     }
+//     assert( pre < lineLen );
     while ( ptr < lineLen && isspace(*(m_buf + line + ptr) )) {
         ptr++;
         nspace++;

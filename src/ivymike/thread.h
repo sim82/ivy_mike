@@ -294,7 +294,10 @@ public:
     ~thread_group() {
          //std::cout << "thread_group destructor: fallback join:\n";
          for( std::vector<thread *>::iterator it = m_threads.begin(); it != m_threads.end(); ++it ) {
-             std::cout << "WARNING: joinable thread in ~thread_group(). This probably means there was an uncaught exception: " << (*it)->joinable() << "\n";
+             if( (*it)->joinable() ) {
+             
+                 std::cout << "WARNING: joinable thread in ~thread_group(). This probably means there was an uncaught exception: " << (*it)->joinable() << "\n";
+             }
          }
         
         join_all();
@@ -327,7 +330,7 @@ public:
                 //delete (*it);
             }
             
-            m_threads.resize(0);
+           // m_threads.resize(0);
         } catch(...) {
             std::cerr << "BUG: unexpected exception in thread_group::join_all\n"; // kind of stupid: printing this message might throw...
         }

@@ -293,7 +293,9 @@ private:
 
     std::string substring( const idi_t from, const idi_t to ) ;
 
-    void printLocation() ;
+    void printLocation();
+    void print_location( std::ostream &os ) ;
+    
 
     void skipWhitespace() ;
 

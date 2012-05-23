@@ -160,6 +160,8 @@ void parser::substring(const parser::idi_t& from, const parser::idi_t& to, std::
     out.append(from, to );
 }
 
+
+
 void parser::printLocation() {
     if ( QUIET ) {
         return;
@@ -177,15 +179,32 @@ void parser::printLocation() {
     }
     printf("^\n");
 }
+
+void parser::print_location(std::ostream& os) {
+    idi_t pos1 = std::max(inputA.begin(), ptr - 10);
+    idi_t pos2 = std::min(inputA.end(), ptr + 10);
+    os << "\n";
+    os << substring(pos1, pos2).c_str() << "\n";
+    for (idi_t i = pos1; i < ptr; ++i) {
+        os << " ";
+    }
+    os << "^\n";
+    
+}
+
+
 void parser::skipWhitespace() {
     while ( ptr != inputA.end() && std::isspace(*ptr) ) {
         ++ptr;
     }
     if ( ptr == inputA.end() ) {
 
-        printLocation();
-        printf( "hit end of input while skipping white-spaces\n" );
-        throw std::exception();
+        std::stringstream ss;
+        
+        ss << "hit end of input while skipping white-spaces:\n";
+        print_location(ss);
+        
+        throw std::runtime_error( ss.str() );
     }
 
 }
@@ -202,11 +221,13 @@ std::string parser::parseBranchLabel() {
         // labels have the form [blablabla], so the label content starts at lstart + 1
 
         if ( lend - (lstart+1) <= 0 ) {
-            printLocation();
-
             std::stringstream ss;
-            ss << "bad branch label: " << substring(lstart, ptr);
-            throw ss.str();
+            
+            ss <<  "bad branch label: " << substring(lstart, ptr) << "\n";
+            print_location(ss);
+            
+            throw std::runtime_error( ss.str() );
+
         }
 
         return substring(lstart + 1, lend);
@@ -237,7 +258,7 @@ parser::idi_t parser::findNext(parser::idi_t pos, char c) {
     }
 
     if ( pos >= inputA.end() ) {
-        throw "reached end of input in find next";
+        throw std::runtime_error("reached end of input in find next");
 
     }
     return pos;
@@ -282,9 +303,11 @@ double parser::parseBranchLength() {
 
     // expect + consume ':'
     if ( *ptr != ':') {
-        printLocation();
-        printf("parse error: parseBranchLength expects ':' at %zd\n", ptr - inputA.begin());
-        throw std::exception();
+        std::stringstream ss;
+        ss <<  "parse error: parseBranchLength expects ':' at " << size_t(ptr - inputA.begin()) << "\n";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+
     } else {
 
         ++ptr;
@@ -293,8 +316,10 @@ double parser::parseBranchLength() {
 
         idi_t lend = findFloat(ptr);
         if (lend == ptr) {
-            printf( "missing float number at %zd\n", ptr - inputA.begin() );
-            throw std::exception();
+            std::stringstream ss;
+            ss <<  "missing float number at " << size_t(ptr - inputA.begin()) << "\n";
+            print_location(ss);
+            throw std::runtime_error( ss.str() );
         }
 
         double l = atof(substring(ptr, lend).c_str());
@@ -312,13 +337,11 @@ parser::idi_t parser::findFloat(parser::idi_t pos) {
 }
 void parser::twiddle(lnode* n1, lnode* n2, double branchLen, std::string branchLabel, double support) {
     if ( n1->back != 0 ) {
-        printf( "n1.back != null" );
-        throw std::exception();
+        throw std::runtime_error( "n1.back != null" );
     }
 
     if ( n2->back != 0 ) {
-        printf( "n2.back != null" );
-        throw std::exception();
+        throw std::runtime_error("n2.back != null");
     }
 
     n1->back = n2;
@@ -340,9 +363,12 @@ lnode* parser::parseInnerNode() {
 
     // expect + consume '('
     if ( *ptr != '(') {
-        printLocation();
-        printf("parse error: parseInnerNode expects '(' at %zd\n", ptr - inputA.begin());
-        throw std::exception();
+        
+        std::stringstream ss;
+        ss << "parse error: parseInnerNode expects '(' at " << size_t(ptr - inputA.begin()) << "\n";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+        
     }
     ptr++;
 
@@ -363,9 +389,11 @@ lnode* parser::parseInnerNode() {
 
     // expect + consume ','
     if ( *ptr != ',') {
-        printLocation();
-        printf("parse error: parseInnerNode expects ',' at %zd\n", ptr - inputA.begin());
-        throw std::exception();
+        std::stringstream ss;
+        ss << "parse error: parseInnerNode expects ',' at " << size_t(ptr - inputA.begin()) << "\n";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+        
     }
     ptr++;
 
@@ -468,10 +496,13 @@ lnode* parser::parseInnerNode() {
         skipWhitespace();
 
         if ( *ptr != ')' ) {
-            printLocation();
-
-            printf("parse error: parseInnerNode (at root) expects ') at %zd\n", ptr - inputA.begin());
-            throw std::exception();
+            
+            
+           std::stringstream ss;
+           ss << "parse error: parseInnerNode (at root) expects ') at " << size_t(ptr - inputA.begin()) << "\n";
+           print_location(ss);
+           throw std::runtime_error( ss.str() );
+           
         }
         ptr++;
         skipWhitespace();
@@ -486,9 +517,12 @@ lnode* parser::parseInnerNode() {
 //                      System.exit(0);
         return n;
     } else {
-        printLocation();
-        printf("parse error: parseInnerNode expects ')'or ',' at %zd\n", ptr - inputA.begin());
-        throw std::runtime_error( "bailing out" );
+         
+        std::stringstream ss;
+        ss << "parse error: parseInnerNode expects ')'or ',' at " << size_t(ptr - inputA.begin()) << "\n";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+        
     }
 
 
@@ -510,9 +544,11 @@ parser::idi_t parser::findEndOfBranch(parser::idi_t pos) {
         ++pos;
     }
     if ( pos == inputA.end() ) {
-        printLocation();
-        printf( "reached end of input while looking for end of branch label" );
-        throw std::exception();
+        std::stringstream ss;
+        ss << "reached end of input while looking for end of branch label\n";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+        
     }
 
     return pos;
@@ -532,7 +568,7 @@ lnode* parser::parse() {
 
     // expect terminating ';'
     if (ptr >= inputA.end()) {
-        throw "parse error. parse: end of input. missing ';'";
+        throw std::runtime_error("parse error. parse: end of input. missing ';'");
     }
 
     // branch length might be present for historical reasons
@@ -541,8 +577,11 @@ lnode* parser::parse() {
     }
 
     if ( *ptr != ';') {
-        printLocation();
-        throw "parse error. parse expects ';'";
+        std::stringstream ss;
+        ss << "parse error. parse expects ';'";
+        print_location(ss);
+        throw std::runtime_error( ss.str() );
+        
     }
     // consume terminating ;
     ++ptr;

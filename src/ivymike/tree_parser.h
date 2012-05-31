@@ -88,7 +88,7 @@ struct adata {
     
     adata() : isTip( false ), tipSerial(-1), support(-1), m_serial(s_serial++) {}
 
-    virtual ~adata() {}
+    virtual ~adata() ;
     
     virtual void visit() {}
 
@@ -124,7 +124,7 @@ inline std::ostream &operator<<(std::ostream &os, const adata &ad ) {
 
 
 struct ldata {
-    virtual ~ldata() {}
+    virtual ~ldata() ;
 };
 
 
@@ -142,14 +142,12 @@ class lnode
 public:
     static lnode *create( ln_pool &pool );
 
-	
-	
+    
+    
     lnode() : next(0), back(0), backLen(-1), backSupport(-1), mark(false), towards_root(false) {
         m_thisptr.reset(this);
     }
-    virtual ~lnode() {
-// 		std::cout << "~lnode\n";
-    }
+    virtual ~lnode() ;
     
     sptr::weak_ptr<lnode>get_smart_ptr() {
         return sptr::weak_ptr<lnode>(m_thisptr);
@@ -193,7 +191,7 @@ public:
         return 0;
     }
 
-    virtual ~node_data_factory() {}
+    virtual ~node_data_factory() ;
 };
 
 class ln_pool 

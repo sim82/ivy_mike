@@ -60,11 +60,11 @@ lnode *lnode::create( ln_pool &pool ) {
 
 void ln_pool::sweep() {
 
-	// TEST: auto-mark pinned roots
-	for( std::vector<lnode *>::iterator it = m_pinned_root.begin(); it != m_pinned_root.end(); ++it ) {
-		mark(*it);
-	}
-
+    // TEST: auto-mark pinned roots
+    for( std::vector<lnode *>::iterator it = m_pinned_root.begin(); it != m_pinned_root.end(); ++it ) {
+        mark(*it);
+    }
+    
     size_t size1 = m_list.size();
 
     for ( lt::iterator it = m_list.begin(); it != m_list.end(); ) {
@@ -126,18 +126,18 @@ void ln_pool::mark(lnode* n) {
 
 
 void ln_pool::pin_root( lnode *node ) {
-	m_pinned_root.push_back(node);
+    m_pinned_root.push_back(node);
 }
 
 void ln_pool::unpin_root( lnode *node ) {
-	const size_t oldsize = m_pinned_root.size();
-
-	m_pinned_root.erase( std::remove( m_pinned_root.begin(), m_pinned_root.end(), node ), m_pinned_root.end());
-
-	if( oldsize != m_pinned_root.size() + 1 ) {
-		std::cerr << oldsize << " -> " << m_pinned_root.size() << std::endl;
-		throw std::runtime_error( "ln_pool::unpin_root: root not pinned or duplicate");
-	}
+    const size_t oldsize = m_pinned_root.size();
+    
+    m_pinned_root.erase( std::remove( m_pinned_root.begin(), m_pinned_root.end(), node ), m_pinned_root.end());
+    
+    if( oldsize != m_pinned_root.size() + 1 ) {
+        std::cerr << oldsize << " -> " << m_pinned_root.size() << std::endl;
+        throw std::runtime_error( "ln_pool::unpin_root: root not pinned or duplicate");
+    }
 }
 
 void parser::readFile(const char* f, std::vector< char >& data) {
@@ -224,6 +224,31 @@ std::string parser::parseBranchLabel() {
         ptr = lend+1;
 
         // labels have the form [blablabla], so the label content starts at lstart + 1
+
+        if ( lend - (lstart+1) <= 0 ) {
+            std::stringstream ss;
+            
+            ss <<  "bad branch label: " << substring(lstart, ptr) << "\n";
+            print_location(ss);
+            
+            throw std::runtime_error( ss.str() );
+
+        }
+
+        return substring(lstart + 1, lend);
+
+
+    } else if ( *ptr == '{' ) {
+        // alternative label form used in jplace files.
+        idi_t lstart = ptr;
+        ++ptr;
+
+
+        idi_t lend = findNext(ptr, '}' );
+
+        ptr = lend+1;
+
+        // alternative labels have the form {blablabla}, so the label content starts at lstart + 1
 
         if ( lend - (lstart+1) <= 0 ) {
             std::stringstream ss;
@@ -592,6 +617,10 @@ lnode* parser::parse() {
     ++ptr;
     return node;
 }
+
+lnode::~lnode() {}
+adata::~adata() {}
+node_data_factory::~node_data_factory() {}
 
 } // namespace tree_parser_ms
 

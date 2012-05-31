@@ -30,7 +30,7 @@ INSTALL(TARGETS ivymike
   ARCHIVE DESTINATION lib
 )
 
-ADD_EXECUTABLE( treeparser_test  src/tree_parser.cpp src/tree_parser_test.cpp )
+# ADD_EXECUTABLE( treeparser_test  src/tree_parser.cpp src/tree_parser_test.cpp )
 # ADD_EXECUTABLE( sdf_test src/sdf.cpp )
 
 

@@ -31,6 +31,7 @@ namespace ivy_mike {
 struct multiple_alignment {
 	std::vector <std::string > names;
 	std::vector <std::vector<uint8_t> > data;
+    
 	
 	bool load_phylip( std::istream &is );
 	bool load_phylip( const char *name );

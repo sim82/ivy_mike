@@ -21,11 +21,12 @@
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
+#include <cctype>
+#include <algorithm>
 
 #include "ivymike/multiple_alignment.h"
 
 using namespace ivy_mike;
-
 
 bool multiple_alignment::load_phylip( std::istream &is ) {
     size_t nTaxon;
@@ -38,45 +39,124 @@ bool multiple_alignment::load_phylip( std::istream &is ) {
     is >> nTaxon;
     is >> seqLen;
 
+    while( isspace(is.peek() )) { is.get(); }
+    
+    
 //     printf( "header: %zd %zd\n", nTaxon, seqLen );
 
     size_t n = 0;
 
 
-    while ( !is.eof() ) {
-        std::string name;
-        std::string seq;
-
-        is >> name;
-        is >> seq;
-
-        if( is.eof() ) {
-            
-            break;
+    for( size_t i = 0; i < nTaxon; ++i ) {
+        std::string line;
+        std::getline( is, line ); 
+        
+        std::string::iterator ws_it = std::find_if( line.begin(), line.end(), isspace );
+        
+        if( std::distance( line.begin(), ws_it ) == 0 ) {
+            throw std::runtime_error( "could not read taxon name in phylip file: line starts with whitespace\n" );
         }
-//         std::cout << "name: " << name << "\n";
-        if( seq.size() != seqLen ) {
-            std::cerr << "name: " << name << "\n";
-            std::cerr << "data: " << seq.size() << "\n";
-            
-            throw std::runtime_error( "bad sequence in phylip file\n" );
+        
+        if( std::distance( ws_it, line.end() ) == 0 ) {
+            throw std::runtime_error( "could not read taxon name in phylip file: no whitespace before end of line\n" );
         }
+        
+        
+        std::string name( line.begin(), ws_it );
+        
+        std::vector<uint8_t> seq;
+        std::remove_copy_if( ws_it, line.end(), std::back_inserter(seq), isspace );
         
         names.push_back(name);
-        data.push_back( std::vector<uint8_t>(seq.begin(), seq.end()));
+        data.push_back( seq );
         
-        
-		
-		
 //         printf( "name: %s\n", name.c_str() );
         n++;
     }
 
+    while( data.front().size() < seqLen ) {
+        {
+            // skip one empty line
+            std::string line;
+            std::getline( is, line ); 
+        }
+        assert( data.size() == nTaxon );
+        for( size_t i = 0; i < nTaxon; ++i ) {
+            std::string line;
+            std::getline( is, line ); 
+            
+            if( !is.good() ) {
+                throw std::runtime_error( "early end of (interleaved) phylip file." );
+                
+            }
+            
+            std::string::iterator ws_it = std::find_if( line.begin(), line.end(), isspace );
+            
+            std::vector<uint8_t> seq;
+            std::remove_copy_if( line.begin(), line.end(), std::back_inserter(data.at(i)), isspace );
+
+        }
+        
+    }
+    
     assert( n == nTaxon );
 //     printf( "n: %zd\n", n );
 
     return n == nTaxon;
 }
+
+
+
+// bool multiple_alignment::load_phylip( std::istream &is ) {
+//     size_t nTaxon;
+//     size_t seqLen;
+//     
+//     if( !is.good() ) {
+//         throw std::runtime_error( "cannot read phylip file" );
+//     }
+// 
+//     is >> nTaxon;
+//     is >> seqLen;
+// 
+// //     printf( "header: %zd %zd\n", nTaxon, seqLen );
+// 
+//     size_t n = 0;
+// 
+// 
+//     while ( !is.eof() ) {
+//         std::string name;
+//         std::string seq;
+// 
+//         is >> name;
+//         is >> seq;
+// 
+//         if( is.eof() ) {
+//             
+//             break;
+//         }
+// //         std::cout << "name: " << name << "\n";
+//         if( seq.size() != seqLen ) {
+//             std::cerr << "name: " << name << "\n";
+//             std::cerr << "data: " << seq.size() << "\n";
+//             
+//             throw std::runtime_error( "bad sequence in phylip file\n" );
+//         }
+//         
+//         names.push_back(name);
+//         data.push_back( std::vector<uint8_t>(seq.begin(), seq.end()));
+//         
+//         
+// 		
+// 		
+// //         printf( "name: %s\n", name.c_str() );
+//         n++;
+//     }
+// 
+//     assert( n == nTaxon );
+// //     printf( "n: %zd\n", n );
+// 
+//     return n == nTaxon;
+// }
 
 bool multiple_alignment::load_phylip( const char *name ) {
 	std::ifstream is( name );

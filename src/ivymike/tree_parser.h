@@ -469,6 +469,10 @@ public:
 
 class prune_with_rollback {
 public:
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    prune_with_rollback( prune_with_rollback && ) = default;
+#endif
+    
     prune_with_rollback( lnode *n ) : commit_(false), n_(n) {
         if( n->next->back == 0 || n->next->next->back == 0 ) {
             throw std::runtime_error( "trying to prune tip or unlinked node" );
@@ -529,10 +533,16 @@ public:
     
     lnode *get_save_node() {
         // return lnode that is guaranteed to be still part of the tree after the pruning.
+        // WARNING: make sure that this is always a node next to the pruned node (=member of the new branch),
+        // because other stuff depends on that (e.g., stepwise addition with destiny tree)
         return back1_;
     }
     
 private:
+    prune_with_rollback();
+    prune_with_rollback(prune_with_rollback &);
+    prune_with_rollback & operator=(prune_with_rollback &);
+    
     bool commit_;
     
     double len1_;

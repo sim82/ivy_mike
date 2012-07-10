@@ -353,6 +353,23 @@ void ivy_mike::get_all_splits_by_node( lnode *t, std::vector<lnode*> &nodes, std
     
 }
 
+std::vector<std::string> ivy_mike::get_split_set_by_edge( lnode *t ) {
+    std::vector<lnode *> nodes;
+    
+    ivy_mike::iterate_lnode(t, ivy_mike::back_insert_ifer(nodes, is_tip), false );
+    
+    
+    
+    std::vector<std::string> split_set;
+    split_set.reserve(nodes.size());
+    
+    for( std::vector< lnode* >::iterator it = nodes.begin(), e = nodes.end(); it != e; ++it ) {
+        split_set.push_back( (*it)->m_data->tipName );
+    }
+    
+    return split_set;
+}
+
 
 bool ivy_mike::equal_tip_names( const ivy_mike::tree_parser_ms::lnode * n1, const ivy_mike::tree_parser_ms::lnode * n2 )
 {

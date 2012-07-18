@@ -361,11 +361,23 @@ public:
 
 inline void print_newick( lnode *node, std::ostream &os, bool root = true ) {
     if( node->m_data->isTip ) {
-        assert( !root ); // MEEEEP: unhandled case: tip given as starting node! Can't be bothered now to fix it.
+        //         assert( !root ); // MEEEEP: unhandled case: tip given as starting node! Can't be bothered now to fix it.
+        if( root ) {
+            os << "(";
+        }
 
-        os << node->m_data->tipName << ":" << node->backLen;
-        if( !node->backLabel.empty() ) {
-            os << "[" << node->backLabel << "]";
+
+        os << node->m_data->tipName;
+        if( root ) {
+            os << ",";
+            print_newick(node->back, os, false);
+            os << ");";
+            
+        } else {
+            os << ":" << node->backLen;
+            if( !node->backLabel.empty() ) {
+                os << "[" << node->backLabel << "]";
+            }
         }
     } else {
     	assert( node->next->back != 0 );
@@ -470,10 +482,32 @@ public:
 class prune_with_rollback {
 public:
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    prune_with_rollback( prune_with_rollback && ) = default;
+    prune_with_rollback( prune_with_rollback && other ) : 
+    serial_( other.serial_ ),
+    commit_( other.commit_ ),
+    
+    len1_(other.len1_),
+    len2_(other.len2_),
+    
+    label1_(other.label1_),
+    label2_(other.label2_),
+    
+    support1_(other.support1_),
+    support2_(other.support2_),
+
+    n_(other.n_),
+    back1_(other.back1_),
+    back2_(other.back2_),
+    valid_(other.valid_)
+    {
+        // invalidate donor
+        other.valid_ = false;
+    }
 #endif
     
-    prune_with_rollback( lnode *n ) : commit_(false), n_(n) {
+    prune_with_rollback( lnode *n ) : serial_(s_serial_++), commit_(false), n_(n) {
+//         std::cout << "pwr: " << serial_ << "\n";
+        
         if( n->next->back == 0 || n->next->next->back == 0 ) {
             throw std::runtime_error( "trying to prune tip or unlinked node" );
         }
@@ -504,9 +538,16 @@ public:
         back1_->backLabel = back2_->backLabel = back_label;
         back1_->backSupport = back2_->backSupport = 0.0;
         
+        valid_ = true;
     }
     
     ~prune_with_rollback() {
+        // do nothing for 'moved-from' pwrs
+        if( !valid_ ) {
+            return;
+        }
+        
+//         std::cout << "~pwr: " << serial_ << "\n";
         if( !commit_ ) {
             // std::cerr << "WARNING: untested code: ~prune_with_rollback!!!!\n"; // it seems to work in the spr_vis_test code, what else could possibly go wrong?
             
@@ -531,7 +572,7 @@ public:
         commit_ = true;
     }
     
-    lnode *get_save_node() {
+    lnode *get_save_node() const {
         // return lnode that is guaranteed to be still part of the tree after the pruning.
         // WARNING: make sure that this is always a node next to the pruned node (=member of the new branch),
         // because other stuff depends on that (e.g., stepwise addition with destiny tree)
@@ -539,9 +580,14 @@ public:
     }
     
 private:
+    
     prune_with_rollback();
     prune_with_rollback(prune_with_rollback &);
     prune_with_rollback & operator=(prune_with_rollback &);
+    
+    static size_t s_serial_;
+    size_t serial_;
+    
     
     bool commit_;
     
@@ -556,6 +602,8 @@ private:
     
     lnode *back1_;
     lnode *back2_;
+    
+    bool valid_;
 };
 // forward to stupid static method (why did I put it in a static method? bad java habit?)
 inline void twiddle_nodes( lnode *n1, lnode *n2, double branchLen, std::string branchLabel, double support ) {

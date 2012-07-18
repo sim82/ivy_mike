@@ -622,6 +622,8 @@ lnode::~lnode() {}
 adata::~adata() {}
 node_data_factory::~node_data_factory() {}
 
+size_t prune_with_rollback::s_serial_ = 0;
+
 } // namespace tree_parser_ms
 
 } // namespace ivy_mike

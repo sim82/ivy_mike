@@ -25,15 +25,15 @@ SET( IVYMIKE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src CACHE STRING "IvyMike inclu
 ADD_LIBRARY(ivymike STATIC src/LargePhylip.cpp src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp ${IM_HEADERS})
 
 
-INSTALL(TARGETS ivymike
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
+#INSTALL(TARGETS ivymike
+#  LIBRARY DESTINATION lib
+#  ARCHIVE DESTINATION lib
+#)
 
 # ADD_EXECUTABLE( treeparser_test  src/tree_parser.cpp src/tree_parser_test.cpp )
 # ADD_EXECUTABLE( sdf_test src/sdf.cpp )
 
 
-INSTALL(FILES ivymike/LargePhylip.h
-  DESTINATION include)
+#INSTALL(FILES ivymike/LargePhylip.h
+#  DESTINATION include)
 

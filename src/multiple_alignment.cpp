@@ -23,6 +23,7 @@
 #include <iostream>
 #include <cctype>
 #include <algorithm>
+#include <iterator>
 
 #include "ivymike/multiple_alignment.h"
 

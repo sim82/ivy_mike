@@ -20,6 +20,8 @@
 #ifndef __ivy_mike__fasta_h
 #define __ivy_mike__fasta_h
 
+#include <stdint.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
@@ -29,21 +31,21 @@
 #include <iostream>
 #include <stdexcept>
 #include <cassert>
-#include <stdint.h>
+
 #include <cstdlib>
 #include <cstddef>
 #include <stdexcept>
 #include <sstream>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <fcntl.h>
 #include "ivymike/aligned_buffer.h"
 
 namespace ivy_mike {
 
 #ifndef WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 

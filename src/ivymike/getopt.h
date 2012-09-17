@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <memory>
 #include <functional>
-
+#include <cctype>
 namespace ivy_mike {
 
 template<typename T>

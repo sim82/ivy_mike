@@ -125,7 +125,7 @@ void LargePhylip::map() {
     m_buf = (u1_t*)mmap( 0, m_fileSize, PROT_READ, MAP_PRIVATE, m_fd, 0 );
 #endif
     m_mapping = boost::interprocess::mapped_region( m_fm, boost::interprocess::read_only );
-    assert(0);
+//     assert(0);
 	m_buf = (u1_t*) m_mapping.get_address();
 	//madvise(m_buf, m_fileSize, MADV_RANDOM );
     assert( m_buf != 0 );

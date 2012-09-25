@@ -78,6 +78,8 @@
 
 /***************************************************************************/
 
+#include <stdint.h>
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -221,7 +223,8 @@ static __inline double elapsed(ticks t1, ticks t0)
  * X86-64 cycle counter
  */
 #if (defined(__GNUC__) || defined(__ICC) || defined(__SUNPRO_C)) && defined(__x86_64__)  && !defined(HAVE_TICK_COUNTER)
-typedef unsigned long long ticks;
+//typedef unsigned long long ticks;
+typedef uint64_t ticks;
 
 static __inline__ ticks getticks(void)
 {

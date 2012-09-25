@@ -73,7 +73,7 @@ struct sdf_int_full {
 
             ele_t r;
 
-            int nns = 0;
+            size_t nns = 0;
             for ( size_t i = 0; i < ele_t::size(); i++ ) {
 
                 if ( !isspace(ele[i] ) ) {
@@ -210,7 +210,7 @@ struct sdf_int_eco {
 
             ele_t r;
 
-            int nns = 0;
+            size_t nns = 0;
             for ( size_t i = 0; i < ele_t::size(); i++ ) {
 
                 if ( !isspace(ele[i] ) ) {

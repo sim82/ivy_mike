@@ -5,8 +5,9 @@ IF(NOT BOOST_ROOT)
 set(BOOST_ROOT C:\\src\\boost_1_47_0)
 ENDIF()
 
+
 include_directories( ${BOOST_ROOT} )
-file(GLOB IM_HEADERS *.h)
+file(GLOB IM_HEADERS src/ivymike/*.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()
 

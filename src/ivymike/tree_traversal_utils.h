@@ -287,7 +287,7 @@ void visit_lnode( typename visitor::lnode *n, visitor &v, bool go_back = true ) 
     if( n->next->next->back != 0 ) {
         visit_lnode( n->next->next->back, v, false );
     }
-};
+}
 
 template <class visitor>
 void visit_lnode_postorder( typename visitor::lnode *n, visitor &v, bool go_back = true ) {
@@ -305,7 +305,7 @@ void visit_lnode_postorder( typename visitor::lnode *n, visitor &v, bool go_back
     
     v( n );
     
-};
+}
 
 template <class LNODE, class CONT = std::vector<sptr::shared_ptr<LNODE> > >
 struct tip_collector {
@@ -379,7 +379,7 @@ void visit_edges( typename visitor::lnode *n, visitor &v, bool at_root = true ) 
     }
     // at the root, the edge between n and n->back will be visited when recursing to n->back
       
-};
+}
 
 template <class LNODE>
 struct edge_collector {
@@ -399,7 +399,7 @@ public:
 
 
 class node_level_assignment {
-	typedef ivy_mike::tree_parser_ms::lnode lnode;
+    typedef ivy_mike::tree_parser_ms::lnode lnode;
 
     std::vector<std::pair<int,lnode *> > m_level_mapping;
 
@@ -511,7 +511,7 @@ void iterate_lnode( lnode *n, oiter start, bool go_back = true ) {
     if( n->next->next->back != 0 ) {
     	iterate_lnode( n->next->next->back, start, false );
     }
-};
+}
 
 template <typename lnode, typename Tfunc>
 void apply_lnode( lnode *n, Tfunc func, bool go_back = true ) {
@@ -530,7 +530,7 @@ void apply_lnode( lnode *n, Tfunc func, bool go_back = true ) {
     if( n->next->next->back != 0 ) {
         apply_lnode( n->next->next->back, func, false );
     }
-};
+}
 
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -539,7 +539,7 @@ template <typename lnode, typename oiter>
 void iterate_lnode_test( lnode *n, oiter start, bool go_back = true ) {
     // call recurseve apply with a 'iterator inserter' lambda
     apply_lnode(n, [&start](lnode *n) {*(start++)=n;}, go_back );
-};
+}
 #endif
 
 

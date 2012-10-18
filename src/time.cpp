@@ -55,10 +55,17 @@ double ivy_mike::gettime(void )
 
 
 double ivy_mike::perf_timer::my_getticks() {
+
+#ifdef HAVE_TICK_COUNTER
 #if defined(WIN32) && !defined(_M_X64)
 	return double(getticks().QuadPart);
 #else
 	return double(getticks());
 #endif
+#else
+    // fall back to msecs (kind of)
+    return ivy_mike::gettime() * 1000;
+#endif
+
 }
 

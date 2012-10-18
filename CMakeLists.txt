@@ -6,14 +6,16 @@ set(BOOST_ROOT C:\\src\\boost_1_47_0)
 ENDIF()
 
 
-include_directories( ${BOOST_ROOT} )
+# include_directories( ${BOOST_ROOT} )
 file(GLOB IM_HEADERS src/ivymike/*.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()
 
 ENDIF()
 
-
+IF( BOOST_ROOT )
+include_directories( ${BOOST_ROOT} )
+ENDIF()
 
 
 PROJECT(ivymike)
@@ -23,7 +25,7 @@ SET( IVYMIKE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src CACHE STRING "IvyMike inclu
 #SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
 
 #ADD_LIBRARY(ivymike src/main.cpp src/LargePhylip.cpp src/time.cpp )
-ADD_LIBRARY(ivymike STATIC src/LargePhylip.cpp src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp ${IM_HEADERS})
+ADD_LIBRARY(ivymike STATIC src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp src/LargePhylip.cpp ${IM_HEADERS})
 
 
 #INSTALL(TARGETS ivymike

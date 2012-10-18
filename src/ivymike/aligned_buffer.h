@@ -172,6 +172,8 @@ class alloc {
 #ifndef WIN32
     struct allocator_posix {
         static inline void *alloc( size_t align, size_t size ) {
+            
+#ifndef __ANDROID__
             void *ptr;
             int ret = posix_memalign( (void**)&ptr, align, size );
             
@@ -179,6 +181,16 @@ class alloc {
                 throw std::runtime_error( "posix_memalign failed" );
             }
             return ptr;
+#else
+            
+            void *ptr = memalign(align,size);
+            
+            if( ptr == 0 ) {
+                throw std::runtime_error( "memalign failed" );
+            }
+            
+            return ptr;
+#endif
         }
 
         static inline void free( void *ptr ) {
@@ -258,6 +270,7 @@ public:
     using std::vector<T,ab_internal_::alloc<T,alignment> >::reserve;
     using std::vector<T,ab_internal_::alloc<T,alignment> >::push_back;
     using std::vector<T,ab_internal_::alloc<T,alignment> >::data;
+    using std::vector<T,ab_internal_::alloc<T,alignment> >::assign;
     
     using std::vector<T,ab_internal_::alloc<T,alignment> >::operator[];
     

@@ -17,6 +17,9 @@
  *  along with ivy_mike.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// boost mmap stuff does not compile on android, yet
+#ifndef __ANDROID__
+
 #include "ivymike/LargePhylip.h"
 #include <fstream>
 
@@ -181,3 +184,4 @@ void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec, size_t seq_len)
     rec.dataMax = rec.dataLen;
 
 }
+#endif

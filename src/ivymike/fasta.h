@@ -136,9 +136,15 @@ static inline void get_line( input &is, std::vector<char> &linebuf ) {
 
 }
 
-static inline bool xisspace( int c ) {
-    return c == ' ' || c == '\n';   
+static inline bool xisnewline( int c ) {
+    return c == '\n' || c == '\r';
 }
+
+static inline bool xisspace( int c ) {
+    return c == ' ' || xisnewline(c); //c == '\n';   
+}
+
+
 
 // template<class input>
 // static void read_fasta( input &is, std::vector<std::string> &names, std::vector<std::vector<uint8_t> > &data ) {
@@ -246,7 +252,10 @@ public:
     
     bool next_seq( std::string &name, std::vector<uint8_t> &seq ) {
         
+      
         
+        
+        // look for '>'
         while( m_input.good() && m_input.get() != '>' ) {}
 
         if( !m_input.good() ) {
@@ -258,11 +267,12 @@ public:
 
         int c;
         
+        // skip spaces
         while( xisspace(m_input.get() )) {}
         
         m_input.unget();
         
-        
+        // read name until first space
         while( true ) {
             c = m_input.get();
             
@@ -272,11 +282,13 @@ public:
             name.push_back(c); 
         }
         
-        
-        if( c != '\n' ) {
-            while( !m_input.eof() && m_input.get() != '\n' ) {}
+        // read remaining name line until first newline
+        while( !m_input.eof() && !xisnewline(c) ) {
+            c = m_input.get();
         }
-            
+        
+        
+        // gobble up remaining spaces (the newline check above could have been triggered by @#$%* windows newline, aaahhhhrggg!)    
         while( xisspace( m_input.get() )) {}
         
         m_input.unget();

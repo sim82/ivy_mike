@@ -44,6 +44,8 @@
 #include <boost/interprocess/mapped_region.hpp>
 
 
+namespace ivy_mike {
+
 typedef unsigned char u1_t;
 // namespace gnu = __gnu_cxx;
 
@@ -77,7 +79,7 @@ struct Rec {
 
 };
 
-class LargePhylip {
+class large_phylip {
 //    int m_fd;
     boost::interprocess::file_mapping m_fm;
     boost::interprocess::mapped_region m_mapping;
@@ -100,9 +102,9 @@ class LargePhylip {
 
 
 public:
-    LargePhylip( const char *filename ) ;
+    large_phylip( const char *filename ) ;
 
-    ~LargePhylip() ;
+    ~large_phylip() ;
     void print() ;
     void map() ;
 
@@ -110,26 +112,26 @@ public:
 
     int getIdx( const char *name ) ;
     
-    inline std::string getName( int i ) {
+    inline std::string name_at( int i ) {
 	assert( m_buf != 0 );
 	return m_recs.at(i).getName(m_buf);
     }
     
-    inline size_t getNameLen( int i ) {
+    inline size_t name_len_at( int i ) {
         return m_recs.at(i).nameLen;
     }
     
-    inline std::string getSequence( int i ) {
+    inline std::string sequence_at( int i ) {
 	assert( m_buf != 0 );
 	return m_recs.at(i).getData(m_buf);
     }
     
-    inline u1_t * getSequenceBegin( int i ) {
+    inline u1_t * sequence_begin_at( int i ) {
         const Rec &rec = m_recs.at(i);
         return m_buf + rec.data;
     }
     
-    inline u1_t * getSequenceEnd( int i ) {
+    inline u1_t * sequence_end_at( int i ) {
         const Rec &rec = m_recs.at(i);
         return m_buf + rec.data + rec.dataLen;
     }
@@ -138,14 +140,15 @@ public:
 	return m_recs.size();
     }
     
-    inline int getSeqLen() {
+    inline int sequence_len() {
 	return m_seqLen;
     }
-    void getSequenceStart ( int i );
+//     void getSequenceStart ( int i );
     
     inline size_t max_name_len() const {
         return m_maxNameLen;
     }
 };
+}
 
 #endif

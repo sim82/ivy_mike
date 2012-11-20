@@ -20,11 +20,13 @@
 // boost mmap stuff does not compile on android, yet
 #ifndef __ANDROID__
 
-#include "ivymike/LargePhylip.h"
+#include "ivymike/large_phylip.h"
 #include <fstream>
 
 
-LargePhylip::LargePhylip(const char* filename) 
+using ivy_mike::large_phylip;
+
+large_phylip::large_phylip(const char* filename) 
     : m_fm(filename, boost::interprocess::read_only), 
     m_fileSize(0), 
     m_buf(0), 
@@ -111,17 +113,17 @@ LargePhylip::LargePhylip(const char* filename)
 //         print();
 
 }
-LargePhylip::~LargePhylip() {
+large_phylip::~large_phylip() {
     if ( m_buf != 0 ) {
         unmap();
     }
 }
-void LargePhylip::print() {
+void large_phylip::print() {
     for ( std::vector< Rec >::iterator it = m_recs.begin(); it != m_recs.end(); ++it ) {
         printf( "name: %s %d\n", (*it).getName(m_buf).c_str(), (*it).dataLen );
     }
 }
-void LargePhylip::map() {
+void large_phylip::map() {
 	
     assert( m_buf == 0 );
     assert(m_fileSize > 0 );
@@ -135,14 +137,14 @@ void LargePhylip::map() {
     assert( m_buf != 0 );
 	
 }
-void LargePhylip::unmap() {
+void large_phylip::unmap() {
     assert(m_buf != 0);
     assert(m_fileSize > 0 );
 //    munmap(m_buf, m_fileSize);
     m_mapping = boost::interprocess::mapped_region();
     m_buf = 0;
 }
-int LargePhylip::getIdx(const char* name) {
+int large_phylip::getIdx(const char* name) {
     std::map< std::string, size_t >::iterator it = m_nameMap.find(std::string(name));
     if ( it != m_nameMap.end() ) {
         return (*it).second;
@@ -150,7 +152,7 @@ int LargePhylip::getIdx(const char* name) {
         return -1;
     }
 }
-void LargePhylip::interpret(off_t line, off_t lineLen, Rec& rec, size_t seq_len) {
+void large_phylip::interpret(off_t line, off_t lineLen, Rec& rec, size_t seq_len) {
     rec.name = line;
 
     off_t ptr = 0;

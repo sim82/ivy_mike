@@ -28,6 +28,7 @@
 #include <cctype>
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include "demangle.h"
 
 #include "smart_ptr.h"
@@ -197,18 +198,19 @@ public:
 class ln_pool 
 {
      
-    typedef intrusive::slist<lnode> lt;
-    std::vector<lnode *> m_pinned_root;
-
-    lt m_list;
-
-    //sptr::shared_ptr<node_data_factory> m_ad_fact;
-    std::auto_ptr<node_data_factory> m_ad_fact;
+  
 public:
-    
+#if __cplusplus <= 199711L
+    typedef std::auto_ptr<node_data_factory> fact_ptr_type;
     // this version takes ownership of fact!
-    // TODO: change to unique_ptr when available!
-    ln_pool( std::auto_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
+    ln_pool( fact_ptr_type fact ) : m_ad_fact(fact) {}
+#else
+    typedef std::unique_ptr<node_data_factory> fact_ptr_type;
+    // this version takes ownership of fact!
+//     ln_pool( fact_ptr_type fact ) : m_ad_fact(std::move(fact)) {}
+    ln_pool( fact_ptr_type fact ) : m_ad_fact(std::move(fact)) {}
+#endif
+    
     
     //ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}
@@ -236,6 +238,18 @@ public:
     
     void pin_root( lnode *n );
     void unpin_root( lnode *n );
+    
+private:
+    typedef intrusive::slist<lnode> lt;
+    std::vector<lnode *> m_pinned_root;
+
+    lt m_list;
+
+    //sptr::shared_ptr<node_data_factory> m_ad_fact;
+    
+    
+    
+    fact_ptr_type m_ad_fact;
 };
 
 

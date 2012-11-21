@@ -23,7 +23,7 @@
 
 
 // WARNING: assuming that the 'November 2012 Compiler CTP' is used when on visual studio 2012
-#if __cplusplus <= 199711L || _MSC_VER >= 1700
+#if __cplusplus >= 201103L || _MSC_VER >= 1700
   #define IVY_MIKE__USE_CPP11 (1)
 #endif 
 

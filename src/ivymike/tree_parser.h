@@ -499,6 +499,7 @@ public:
 class prune_with_rollback {
 public:
 #if IVY_MIKE__USE_CPP11
+
     prune_with_rollback( prune_with_rollback && other ) : 
     serial_( other.serial_ ),
     commit_( other.commit_ ),

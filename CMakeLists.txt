@@ -11,6 +11,12 @@ file(GLOB IM_HEADERS src/ivymike/*.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()
 
+  if( USE_CPP11 )
+    SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic -Wall -march=native")
+  else()
+    SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++98 -pedantic -Wall -march=native")
+  endif()
+
 ENDIF()
 
 IF( BOOST_ROOT )

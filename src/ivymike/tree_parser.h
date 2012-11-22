@@ -204,14 +204,14 @@ class ln_pool
   
 public:
 #if IVY_MIKE__USE_CPP11 
-    typedef std::auto_ptr<node_data_factory> fact_ptr_type;
-    // this version takes ownership of fact!
-    ln_pool( fact_ptr_type fact ) : m_ad_fact(fact) {}
-#else
-    typedef std::unique_ptr<node_data_factory> fact_ptr_type;
+	typedef std::unique_ptr<node_data_factory> fact_ptr_type;
     // this version takes ownership of fact!
 //     ln_pool( fact_ptr_type fact ) : m_ad_fact(std::move(fact)) {}
     ln_pool( fact_ptr_type fact ) : m_ad_fact(std::move(fact)) {}
+#else
+    typedef std::auto_ptr<node_data_factory> fact_ptr_type;
+    // this version takes ownership of fact!
+    ln_pool( fact_ptr_type fact ) : m_ad_fact(fact) {}
 #endif
     
     

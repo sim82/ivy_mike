@@ -49,37 +49,42 @@ namespace ivy_mike {
 typedef unsigned char u1_t;
 // namespace gnu = __gnu_cxx;
 
-struct Rec {
-    off_t name;
-    int nameLen;
-    int nameMax;
-
-    off_t data;
-    int dataLen;
-    int dataMax;
-
-    inline std::string getName( u1_t *base ) {
-//         char *tmp = (char*)alloca(nameLen+1);
-//         memcpy( tmp, base + name, nameLen );
-//         tmp[nameLen] = 0;
-// 
-//         return std::string(tmp);
-
-	return std::string( base + name, base + name + nameLen );
-    }
-
-    inline std::string getData( u1_t *base ) {
-//         char *tmp = (char*)alloca(dataLen+1);
-//         memcpy( tmp, base + data, dataLen );
-//         tmp[dataLen] = 0;
-
-        
-	return std::string( base + data, base + data + dataLen );
-    }
-
-};
 
 class large_phylip {
+public:
+	struct rec {
+		off_t name;
+		int nameLen;
+		int nameMax;
+
+		off_t data;
+		int dataLen;
+		int dataMax;
+
+		inline std::string getName( u1_t *base ) {
+	//         char *tmp = (char*)alloca(nameLen+1);
+	//         memcpy( tmp, base + name, nameLen );
+	//         tmp[nameLen] = 0;
+	// 
+	//         return std::string(tmp);
+
+		return std::string( base + name, base + name + nameLen );
+		}
+
+		inline std::string getData( u1_t *base ) {
+	//         char *tmp = (char*)alloca(dataLen+1);
+	//         memcpy( tmp, base + data, dataLen );
+	//         tmp[dataLen] = 0;
+
+        
+		return std::string( base + data, base + data + dataLen );
+		}
+
+	};
+
+
+private:
+
 //    int m_fd;
     boost::interprocess::file_mapping m_fm;
     boost::interprocess::mapped_region m_mapping;
@@ -92,12 +97,12 @@ class large_phylip {
     int m_seqLen;
     int m_maxNameLen;
 
-    std::vector<Rec> m_recs;
+    std::vector<large_phylip::rec> m_recs;
 
     std::map<std::string,size_t> m_nameMap;
 
 
-    void interpret( off_t line, off_t lineLen, Rec& rec, size_t seq_len = -1 ) ;
+    void interpret( off_t line, off_t lineLen, large_phylip::rec& rec, size_t seq_len = -1 ) ;
 
 
 
@@ -127,12 +132,12 @@ public:
     }
     
     inline u1_t * sequence_begin_at( int i ) {
-        const Rec &rec = m_recs.at(i);
+        const large_phylip::rec &rec = m_recs.at(i);
         return m_buf + rec.data;
     }
     
     inline u1_t * sequence_end_at( int i ) {
-        const Rec &rec = m_recs.at(i);
+        const large_phylip::rec &rec = m_recs.at(i);
         return m_buf + rec.data + rec.dataLen;
     }
     

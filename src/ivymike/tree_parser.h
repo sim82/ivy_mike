@@ -20,6 +20,9 @@
 #ifndef __ivymike__tree_parser_h
 #define __ivymike__tree_parser_h
 
+
+#include "compiler_capabilities.h"
+
 #include <vector>
 #include <fstream>
 #include <stdexcept>
@@ -200,7 +203,7 @@ class ln_pool
      
   
 public:
-#if __cplusplus <= 199711L
+#if IVY_MIKE__USE_CPP11 
     typedef std::auto_ptr<node_data_factory> fact_ptr_type;
     // this version takes ownership of fact!
     ln_pool( fact_ptr_type fact ) : m_ad_fact(fact) {}
@@ -495,7 +498,7 @@ public:
 
 class prune_with_rollback {
 public:
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if IVY_MIKE__USE_CPP11
     prune_with_rollback( prune_with_rollback && other ) : 
     serial_( other.serial_ ),
     commit_( other.commit_ ),

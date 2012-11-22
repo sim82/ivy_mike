@@ -20,8 +20,25 @@
 
 #ifndef __ivy_mike__thread_h
 #define __ivy_mike__thread_h
+#include "compiler_capabilities.h"
 
-// WARNING: these thread implementations are not very exception safe. use boost if you are interested in correctness...
+
+#if IVY_MIKE__USE_CPP11
+#include <thread>
+#include <mutex>
+
+// implementing ivy_mike::thread has become kind of trivial on a conforming c++11 compiler... well done everyone (for once, this includes microsoft)
+// TODO: get rid of the ivy_mike namespace alltogether.
+
+namespace ivy_mike {
+	typedef std::thread thread;
+	typedef std::mutex mutex;
+
+}
+
+#else
+
+// WARNING: these thread implementations are not very exception safe. use boost/just/std::threads if you are interested in correctness...
 
 #ifdef WIN32
 // funny win32 api fact: you can deactivate everything and the thread implementation still works.
@@ -290,6 +307,8 @@ public:
 }
 #endif
 
+#endif
+
 namespace ivy_mike {
 class thread_group {
     std::vector<thread *> m_threads;
@@ -371,4 +390,8 @@ public:
     }
 };
 }
+
+
+
+
 #endif

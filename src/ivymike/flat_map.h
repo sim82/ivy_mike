@@ -48,7 +48,7 @@ public:
         if( !sorted_ ) {
             throw std::runtime_error( "flat_map::get on unsorted map" );
         }
-        auto lb = std::lower_bound( pairs_.begin(), pairs_.end(), ipair{key, V()} );
+        auto lb = std::lower_bound( pairs_.begin(), pairs_.end(), ipair(key, V()) );
         
         if( lb == pairs_.end() || lb->key_ != key ) {
             return nullptr;

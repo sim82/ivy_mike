@@ -51,7 +51,7 @@ large_phylip::large_phylip(const char* filename)
     off_t ptr = 0;
 
     bool haveHeader = false;
-    std::vector<Rec>::iterator currec; // When all you have is a hammer, everything looks like a nail
+    std::vector<large_phylip::rec>::iterator currec; // When all you have is a hammer, everything looks like a nail
     
     size_t seq_len = -1;
     while ( ptr < m_fileSize ) {
@@ -74,7 +74,7 @@ large_phylip::large_phylip(const char* filename)
         ptr++;
     
         if ( !haveHeader ) {
-            Rec rec;
+            large_phylip::rec rec;
 //                 printf( "ll: %d %d %d\n", lineLen, spos, ptr );
             interpret( spos, lineLen, rec );
 
@@ -119,7 +119,7 @@ large_phylip::~large_phylip() {
     }
 }
 void large_phylip::print() {
-    for ( std::vector< Rec >::iterator it = m_recs.begin(); it != m_recs.end(); ++it ) {
+    for ( std::vector< large_phylip::rec >::iterator it = m_recs.begin(); it != m_recs.end(); ++it ) {
         printf( "name: %s %d\n", (*it).getName(m_buf).c_str(), (*it).dataLen );
     }
 }
@@ -152,7 +152,7 @@ int large_phylip::getIdx(const char* name) {
         return -1;
     }
 }
-void large_phylip::interpret(off_t line, off_t lineLen, Rec& rec, size_t seq_len) {
+void large_phylip::interpret(off_t line, off_t lineLen, large_phylip::rec& rec, size_t seq_len) {
     rec.name = line;
 
     off_t ptr = 0;

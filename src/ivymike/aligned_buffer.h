@@ -27,7 +27,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <vector>
-
+#include <malloc.h>
 //#ifndef _MSC_VER // deactivated for now, because of *intrin.h chaos on vc
 // #include <x86intrin.h>
 
@@ -173,7 +173,7 @@ class alloc {
     struct allocator_posix {
         static inline void *alloc( size_t align, size_t size ) {
             
-#ifndef __ANDROID__
+#if !defined( __ANDROID__) && !defined( __native_client__ )
             void *ptr;
             int ret = posix_memalign( (void**)&ptr, align, size );
             

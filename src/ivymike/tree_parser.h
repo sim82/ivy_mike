@@ -46,7 +46,7 @@ namespace ivy_mike {
 
 
 namespace tree_parser_ms {
-using namespace boost;
+//using namespace boost;
     
 struct adata {
 
@@ -136,7 +136,7 @@ class ln_pool;
 
     
 class lnode
-    : public intrusive::slist_base_hook<> 
+    : public boost::intrusive::slist_base_hook<> 
 
 {
 
@@ -243,7 +243,7 @@ public:
     void unpin_root( lnode *n );
     
 private:
-    typedef intrusive::slist<lnode> lt;
+    typedef boost::intrusive::slist<lnode> lt;
     std::vector<lnode *> m_pinned_root;
 
     lt m_list;

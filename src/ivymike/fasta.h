@@ -41,7 +41,7 @@
 
 namespace ivy_mike {
 
-#ifndef WIN32
+#if !defined( WIN32 ) && !defined(__native_client__)
 #include <sys/types.h>
 #include <sys/stat.h>
 

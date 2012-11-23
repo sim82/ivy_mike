@@ -18,7 +18,7 @@
  */
 
 // boost mmap stuff does not compile on android, yet
-#ifndef __ANDROID__
+#if !defined (__ANDROID__) && !defined(__native_client__)
 
 #include "ivymike/LargePhylip.h"
 #include <fstream>

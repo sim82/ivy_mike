@@ -115,6 +115,11 @@ public:
 
     void unmap() ;
 
+    bool is_mapped() const {
+        return m_buf != 0;
+    }
+        
+    
     int getIdx( const char *name ) ;
     
     inline std::string name_at( int i ) {

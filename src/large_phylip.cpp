@@ -144,13 +144,19 @@ void large_phylip::unmap() {
     m_mapping = boost::interprocess::mapped_region();
     m_buf = 0;
 }
-int large_phylip::getIdx(const char* name) {
-    std::map< std::string, size_t >::iterator it = m_nameMap.find(std::string(name));
+
+int large_phylip::getIdx(const std::string &name) {
+    std::map< std::string, size_t >::iterator it = m_nameMap.find(name);
     if ( it != m_nameMap.end() ) {
         return (*it).second;
     } else {
         return -1;
     }
+}
+
+int large_phylip::getIdx(const char* name) {
+    return getIdx( std::string(name) );
+    
 }
 void large_phylip::interpret(off_t line, off_t lineLen, large_phylip::rec& rec, size_t seq_len) {
     rec.name = line;

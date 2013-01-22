@@ -52,35 +52,35 @@ typedef unsigned char u1_t;
 
 class large_phylip {
 public:
-	struct rec {
-		off_t name;
-		int nameLen;
-		int nameMax;
-
-		off_t data;
-		int dataLen;
-		int dataMax;
-
-		inline std::string getName( u1_t *base ) {
-	//         char *tmp = (char*)alloca(nameLen+1);
-	//         memcpy( tmp, base + name, nameLen );
-	//         tmp[nameLen] = 0;
-	// 
-	//         return std::string(tmp);
-
-		return std::string( base + name, base + name + nameLen );
-		}
-
-		inline std::string getData( u1_t *base ) {
-	//         char *tmp = (char*)alloca(dataLen+1);
-	//         memcpy( tmp, base + data, dataLen );
-	//         tmp[dataLen] = 0;
-
+    struct rec {
+        off_t name;
+        int nameLen;
+        int nameMax;
         
-		return std::string( base + data, base + data + dataLen );
-		}
+        off_t data;
+        int dataLen;
+        int dataMax;
 
-	};
+        inline std::string getName( u1_t *base ) const {
+            //         char *tmp = (char*)alloca(nameLen+1);
+            //         memcpy( tmp, base + name, nameLen );
+            //         tmp[nameLen] = 0;
+            // 
+            //         return std::string(tmp);
+            
+            return std::string( base + name, base + name + nameLen );
+        }
+        
+        inline std::string getData( u1_t *base ) const {
+            //         char *tmp = (char*)alloca(dataLen+1);
+            //         memcpy( tmp, base + data, dataLen );
+            //         tmp[dataLen] = 0;
+            
+            
+            return std::string( base + data, base + data + dataLen );
+        }
+        
+    };
 
 
 private:
@@ -115,23 +115,24 @@ public:
 
     void unmap() ;
 
-    int getIdx( const char *name ) ;
+    int getIdx( const char *name );
+    int getIdx(const std::string &name);
     
-    inline std::string name_at( int i ) {
+    inline std::string name_at( int i ) const {
 	assert( m_buf != 0 );
 	return m_recs.at(i).getName(m_buf);
     }
     
-    inline size_t name_len_at( int i ) {
+    inline size_t name_len_at( int i ) const {
         return m_recs.at(i).nameLen;
     }
     
-    inline std::string sequence_at( int i ) {
+    inline std::string sequence_at( int i ) const {
 	assert( m_buf != 0 );
 	return m_recs.at(i).getData(m_buf);
     }
     
-    inline u1_t * sequence_begin_at( int i ) {
+    inline u1_t * sequence_begin_at( int i ) const {
         const large_phylip::rec &rec = m_recs.at(i);
         return m_buf + rec.data;
     }
@@ -141,7 +142,7 @@ public:
         return m_buf + rec.data + rec.dataLen;
     }
     
-    inline int size() {
+    inline int size() const {
 	return m_recs.size();
     }
     

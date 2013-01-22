@@ -74,11 +74,11 @@ public:
 size_t bitset_hash::operator()( const boost::dynamic_bitset<> &bs ) const {
     #ifndef WIN32
     // TODO: find out why the asser fails under 64bit win32
-    BOOST_STATIC_ASSERT( sizeof( size_t ) == sizeof( dynamic_bitset<>::block_type ) );
+    BOOST_STATIC_ASSERT( sizeof( size_t ) == sizeof( boost::dynamic_bitset<>::block_type ) );
         #endif
-        dynamic_bitset<>::block_type hash = 0;
+        boost::dynamic_bitset<>::block_type hash = 0;
         
-        to_block_range( bs, bitset_hash_iterator<dynamic_bitset<>::block_type>(hash));
+        to_block_range( bs, bitset_hash_iterator<boost::dynamic_bitset<>::block_type>(hash));
         
         
         
@@ -427,7 +427,7 @@ double ivy_mike::compare_trees( lnode *t1, lnode *t2, split_set_t &splits2 ) {
     get_all_splits( t2, edges2, splits2, sorted_tips2 );
     
     size_t nfound = 0;
-    for( std::vector< dynamic_bitset<> >::const_iterator it = splits2.begin(); it != splits2.end(); ++it ) {
+    for( std::vector< boost::dynamic_bitset<> >::const_iterator it = splits2.begin(); it != splits2.end(); ++it ) {
         //std::cout << "contains: " << (split_map.find( *it ) != split_map.end()) << "\n";
         if(split_map.find( *it ) != split_map.end()) {
             nfound++;

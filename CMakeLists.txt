@@ -23,7 +23,6 @@ IF( BOOST_ROOT )
 include_directories( ${BOOST_ROOT} )
 ENDIF()
 
-
 PROJECT(ivymike)
 SET( IVYMIKE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src CACHE STRING "IvyMike include dir" FORCE)
 

@@ -27,7 +27,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <vector>
-#include <malloc.h>
+//#include <malloc.h>
 //#ifndef _MSC_VER // deactivated for now, because of *intrin.h chaos on vc
 // #include <x86intrin.h>
 

@@ -19,6 +19,7 @@
 
 
 #include <memory>
+#include <algorithm>
 #include "ivymike/tree_parser.h"
 
 #include <iostream>

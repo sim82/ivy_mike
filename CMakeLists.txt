@@ -31,7 +31,7 @@ SET( IVYMIKE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src CACHE STRING "IvyMike inclu
 
 #ADD_LIBRARY(ivymike src/main.cpp src/LargePhylip.cpp src/time.cpp )
 ADD_LIBRARY(ivymike STATIC src/time.cpp src/tree_parser.cpp src/multiple_alignment.cpp src/getopt.cpp src/demangle.cpp src/sdf.cpp src/tree_split_utils.cpp src/LargePhylip.cpp src/large_phylip.cpp ${IM_HEADERS})
-
+set_property(TARGET ivymike PROPERTY CXX_STANDARD 11)
 
 #INSTALL(TARGETS ivymike
 #  LIBRARY DESTINATION lib

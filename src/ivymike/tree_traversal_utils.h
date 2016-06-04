@@ -28,7 +28,7 @@
 #include <cassert>
 #include <stdint.h>
 #include <boost/tr1/unordered_set.hpp>
-#include "smart_ptr.h"
+#include <memory>
 #include "tree_parser.h"
 
 
@@ -307,7 +307,7 @@ void visit_lnode_postorder( typename visitor::lnode *n, visitor &v, bool go_back
     
 }
 
-template <class LNODE, class CONT = std::vector<sptr::shared_ptr<LNODE> > >
+template <class LNODE, class CONT = std::vector<std::shared_ptr<LNODE> > >
 struct tip_collector {
     typedef LNODE lnode;
     typedef CONT container;

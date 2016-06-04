@@ -237,7 +237,7 @@ class parser {
         virtual std::string to_string() = 0;
     };
 
-    typedef std::auto_ptr<token> auto_token;
+    typedef std::unique_ptr<token> auto_token;
     
     const static auto_token empty_token;
     
@@ -286,7 +286,7 @@ class parser {
 
 
     std::list <token *> m_tokenstream;
-    void add_opt_proxy( unsigned char c, std::auto_ptr<base_value> bv ); // takes ownership of bv
+    void add_opt_proxy( unsigned char c, std::unique_ptr<base_value> bv ); // takes ownership of bv
 
 public:
     parser() : m_options(256), m_opt_has_argument(256),  m_option_count(256), m_opt_strings(), m_opt_values(256) {}
@@ -299,7 +299,7 @@ public:
     template<typename T>
     void add_opt( unsigned char c, const value<T> &vo ) {
         // wow, finally found a scenario that fits inheritance...
-        add_opt_proxy(c, std::auto_ptr<base_value>(new value<T>(vo)));
+        add_opt_proxy(c, std::unique_ptr<base_value>(new value<T>(vo)));
     }
 
 

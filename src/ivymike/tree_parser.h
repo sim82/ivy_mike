@@ -34,8 +34,7 @@
 #include <memory>
 #include "demangle.h"
 
-#include "smart_ptr.h"
-// #include <boost/weak_ptr.hpp>
+
 #include <boost/intrusive/slist.hpp>
 #include <list>
 namespace ivy_mike {
@@ -153,17 +152,17 @@ public:
     }
     virtual ~lnode() ;
     
-    sptr::weak_ptr<lnode>get_smart_ptr() {
-        return sptr::weak_ptr<lnode>(m_thisptr);
+    std::weak_ptr<lnode>get_smart_ptr() {
+        return std::weak_ptr<lnode>(m_thisptr);
     }
     
-    sptr::shared_ptr<lnode>dealloc() {
-        sptr::shared_ptr<lnode>tmp(m_thisptr);
+    std::shared_ptr<lnode>dealloc() {
+        std::shared_ptr<lnode>tmp(m_thisptr);
         m_thisptr.reset();
         return tmp;
     }
-    sptr::shared_ptr<adata> m_data;
-    sptr::shared_ptr<ldata> m_ldata;
+    std::shared_ptr<adata> m_data;
+    std::shared_ptr<ldata> m_ldata;
     //LN *next;
     lnode *next;
     lnode *back;
@@ -174,7 +173,7 @@ public:
 
     bool mark;
     
-    sptr::shared_ptr<lnode> m_thisptr;
+    std::shared_ptr<lnode> m_thisptr;
     
     bool towards_root;
     
@@ -215,7 +214,7 @@ public:
 #endif
     
     
-    //ln_pool( sptr::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
+    //ln_pool( std::shared_ptr<node_data_factory> fact ) : m_ad_fact(fact) {}
     ln_pool() : m_ad_fact(new node_data_factory) {}
     
     ~ln_pool() {
@@ -248,7 +247,7 @@ private:
 
     lt m_list;
 
-    //sptr::shared_ptr<node_data_factory> m_ad_fact;
+    //std::shared_ptr<node_data_factory> m_ad_fact;
     
     
     

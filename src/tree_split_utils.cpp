@@ -23,6 +23,8 @@
 #include <algorithm>
 
 #include <deque>
+#include <memory>
+
 #include <boost/dynamic_bitset.hpp>
 
 #include <boost/tr1/unordered_set.hpp>
@@ -31,7 +33,6 @@
 #include <boost/static_assert.hpp>
 
 #include "ivymike/tree_parser.h"
-#include "ivymike/smart_ptr.h"
 
 #include "ivymike/time.h"
 #include "ivymike/tree_split_utils.h"
@@ -271,7 +272,6 @@ void ivy_mike::get_all_splits_by_node( lnode *t, std::vector<lnode*> &nodes, std
         switch( it->tc ) {
         case TIP_TIP:    
         {
-            const int pser = it->parent->m_data->m_serial;
             boost::dynamic_bitset<> &bs = res[it->parent];
             bs.resize(ntips);
             
@@ -299,7 +299,6 @@ void ivy_mike::get_all_splits_by_node( lnode *t, std::vector<lnode*> &nodes, std
         }
         case INNER_INNER:
         {
-            const int pser = it->parent->m_data->m_serial;
             boost::dynamic_bitset<> &bs = res[it->parent];
             
             lnode *c1 = it->child1;

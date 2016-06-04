@@ -407,7 +407,7 @@ void parser::add_opt(unsigned char c, bool argument) {
     }
 }
 
-void parser::add_opt_proxy( unsigned char c, std::auto_ptr<base_value> bv ) {
+void parser::add_opt_proxy( unsigned char c, std::unique_ptr<base_value> bv ) {
     if( m_opt_values[c] != 0 ) {
         std::stringstream ss;
         ss << "there is already a value proxy registered for option " << c;
